@@ -8,8 +8,7 @@
 #include <iostream>
 #include <string>
 
-#include <boost/gil/gil_all.hpp> 
-#include <boost/gil/extension/io/png_dynamic_io.hpp> 
+#include "png.h"
 
 #define CIE_8 0.008856 // 216.0/24389.0
 
@@ -34,10 +33,6 @@ struct RGB {
     }
 
     RGB(const RGB& c) : red(c.red), green(c.green), blue(c.blue) {
-        if (longColor() == 16777215) red = green = blue = 0;
-    }
-
-    RGB(const boost::gil::rgb8_pixel_t& p) : red((int)p[0]), green((int)p[1]), blue((int)p[2]) {
         if (longColor() == 16777215) red = green = blue = 0;
     }
 
@@ -171,7 +166,7 @@ int getObjectForColor(RGB c) {
 
     int i, cD;
     int d = 16777215;
-    int best;
+    int best = 0;
 
     for (i = 0; i < 2000; i++) {
         if (!objects[i].valid()) continue;
@@ -192,7 +187,7 @@ int getObjectForColor(RGB c) {
 
 int main(int argc, const char *argv[]) {
     if (argc < 3) {
-        std::cout << "Usage ./objetismo image output";
+        std::cout << "Usage ./objetismo image output" << std::endl;
     }
 
 
@@ -210,36 +205,31 @@ int main(int argc, const char *argv[]) {
         objects[id] = RGB(r, g, b);
     }
 
-    // boost::gil::rgb8_image_t im; 
-    // boost::gil::png_read_image("test.png", im);
-    // boost::gil::rgb8_image_t::const_view_t view(im);
-    // boost::gil::rgb8_pixel_t pixel;
-
-    boost::gil::rgb8_image_t im;
-    boost::gil::png_read_image(argv[1], im);
-    boost::gil::rgb8_view_t v = view(im);
-
     std::ofstream out(argv[2], std::ofstream::binary);
 
-    short w = v.width();
-    short h = v.height();
+    PNG img;
+    img.read(argv[1]);
+
+    short w = img.width();
+    short h = img.height();
 
     out.write(reinterpret_cast<const char *>(&w), sizeof(w));
     out.write(reinterpret_cast<const char *>(&h), sizeof(h));
 
-    // boost::gil::rgb8_image_t imgg(w*32,h*32);
-    short dst_matrix [v.width()][v.height()];
+    short dst_matrix [w][h];
     int x,y;
 #pragma omp parallel for
-    for (x = 0; x < v.width(); x++) {
-        for (y = 0; y < v.height(); y++) {
-            dst_matrix[x][y] = getObjectForColor(v(x,y));
+    for (x = 0; x < w; x++) {
+        for (y = 0; y < h; y++) {
+            png_bytep p = img.getPixel(x, y);
+            RGB c(p[0],p[1],p[2]);
+            dst_matrix[x][y] = getObjectForColor(c);
         }
     }
 
-    for (x = 0; x < v.width(); x++) {
-        std::cout << x << "/" << v.width() << endl;
-        for (y = 0; y < v.height(); y++) {
+    for (x = 0; x < w; x++) {
+        std::cout << x+1 << "/" << w << endl;
+        for (y = 0; y < h; y++) {
             short objId = dst_matrix[x][y];;
             out.write(reinterpret_cast<const char *>(&objId), sizeof(objId));
         }

@@ -12,7 +12,7 @@ $(BINFILE): $(DEPS)
 	# g++ -O3 -funsafe-math-optimizations -W -Wall -Wextra -pedantic -g objetismo.cpp -o objetismo -lpng
 	# g++ -O3 -funsafe-math-optimizations -W -Wall -Wextra -pedantic -g objetismo.cpp -o objetismo -lpng
 val:
-	valgrind --leak-check=full --show-reachable=yes $(BINFILE)
+	valgrind --leak-check=full --show-reachable=yes ./$(BINFILE)
 
 prof:
 	valgrind --tool=callgrind $(BINFILE)
