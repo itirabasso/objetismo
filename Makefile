@@ -1,4 +1,4 @@
-CXXFLAGS=-O3 -ffast-math -W -Wall -Wextra -pedantic -g 
+CXXFLAGS=-O3 -ffast-math -W -Wall -Wextra -pedantic -g -fopenmp
 LDFLAGS=-lpng
 BINFILE=objetismo
 DEPS=objetismo.cpp
