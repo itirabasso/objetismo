@@ -228,15 +228,20 @@ int main(int argc, const char *argv[]) {
     out.write(reinterpret_cast<const char *>(&h), sizeof(h));
 
     // boost::gil::rgb8_image_t imgg(w*32,h*32);
-    
+    short dst_matrix [v.width()][v.height()];
     int x,y;
+#pragma omp parallel for
+    for (x = 0; x < v.width(); x++) {
+        for (y = 0; y < v.height(); y++) {
+            dst_matrix[x][y] = getObjectForColor(v(x,y));
+        }
+    }
+
     for (x = 0; x < v.width(); x++) {
         std::cout << x << "/" << v.width() << endl;
         for (y = 0; y < v.height(); y++) {
-            short objId = getObjectForColor(v(x,y));
-            // std::cout << objId << endl;
+            short objId = dst_matrix[x][y];;
             out.write(reinterpret_cast<const char *>(&objId), sizeof(objId));
-            // std::cout << (int)pixel[0] << (int)pixel[1] << (int)pixel[2] << endl;
         }
     }
     out.close();
