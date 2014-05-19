@@ -14,12 +14,6 @@
 
 using namespace std;
 
-string to_string(int number){
-    std::ostringstream s;
-    s << number;
-    return s.str();
-}
-
 struct RGB {
     int red;
     int green;
