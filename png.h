@@ -61,8 +61,6 @@ PNG::~PNG() {
 
 void PNG::read(const char *filename) {
     
-    std::cout << "Cargando " << filename << std::endl;
-
     FILE *fp = fopen(filename, "rb");
 
     png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -178,7 +176,6 @@ void PNG::paste(PNG& src, int x, int y) {
         for(int j = 0; j < src.height(); j++) {
             png_byte* p = src.getPixel(i, j);
             setPixel(p, x+i, y+j);
-            // getPixel(x+i, y+j) = p;
         }
     }
 }
@@ -187,32 +184,27 @@ void PNG::create(int width, int height) {
     _width = width;
     _height = height;
 
-    // png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    // if (!png) abort();
+    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png) abort();
  
-    // png_infop info = png_create_info_struct(png);
-    // if (!info) abort();
- 
-    // if (setjmp(png_jmpbuf(png))) abort();
-    // png_init_io(png, fp);
+    png_infop info = png_create_info_struct(png);
+    if (!info) abort();
  
     // Output is 8bit depth, RGBA format.
-    // png_set_IHDR(
-    //     png,
-    //     info,
-    //     _width, _height,
-    //     8,
-    //     PNG_COLOR_TYPE_RGBA,
-    //     PNG_INTERLACE_NONE,
-    //     PNG_COMPRESSION_TYPE_DEFAULT,
-    //     PNG_FILTER_TYPE_DEFAULT
-    // );
-    // png_write_info(png, info);
- 
+    png_set_IHDR(
+        png,
+        info,
+        _width, _height,
+        8,
+        PNG_COLOR_TYPE_RGBA,
+        PNG_INTERLACE_NONE,
+        PNG_COMPRESSION_TYPE_DEFAULT,
+        PNG_FILTER_TYPE_DEFAULT
+    );
+
     row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * _height);
     for(int y = 0; y < _height; y++) {
-        // row_pointers[y] = (png_byte*)malloc(png_get_rowbytes(png,info));
-        row_pointers[y] = (png_byte*)malloc(width);
+        row_pointers[y] = (png_byte*)malloc(png_get_rowbytes(png,info));
     }
 
 }

@@ -1,12 +1,9 @@
-// g++ -g tests.cpp -o tests
-// valgrind --leak-check=full ./tests
-
-// #include "mini_test.h"
-// #include "messineria.h"
 #include <math.h>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <assert.h>
 
 #include "png.h"
 
@@ -56,10 +53,9 @@ struct LAB {
 
 };
 
-int cache[256 + 256*256 + 256*65536];
-
-// 100% negro.
+int cache[256 + 256*256 + 256*65536] = {0};
 RGB objects[2000];
+int files[2000];
 
 
 double xyzTransformation(double v) {
@@ -160,7 +156,7 @@ int getObjectForColor(RGB c) {
 
     int i, cD;
     int d = 16777215;
-    int best = 0;
+    int best = -1;
 
     for (i = 0; i < 2000; i++) {
         if (!objects[i].valid()) continue;
@@ -175,13 +171,31 @@ int getObjectForColor(RGB c) {
             best = i;
         }
     }
+    if (best > 2000) {  
+        std::cout << "assert! " << best << " for " << colorValue << std::endl;
+        assert(false);
+    }
     cache[colorValue] = best;
     return cache[colorValue];
 }
 
+
+// Get current date/time, format is YYYY-MM-DD.HH:mm:ss
+const std::string currentDateTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+    return buf;
+}
+
 int main(int argc, const char *argv[]) {
-    if (argc < 3) {
-        std::cout << "Usage ./objetismo image output" << std::endl;
+    if (argc < 2) {
+        std::cout << "Usage ./objetismo image.png" << std::endl;
+        return 1;
     }
 
 
@@ -192,47 +206,106 @@ int main(int argc, const char *argv[]) {
         if (id1 == -1) break;
         int id2 = in.get();
         int id = id1 + (id2 * 256);
+        int fi1 = in.get();
+        int fi2 = in.get();
+        int fi = fi1 + (fi2 * 256);
+
         int r = in.get();
         int g = in.get();
         int b = in.get();
-        // std::cout << id << " => (" << r << "," << g << "," << b << ")" << endl;
         objects[id] = RGB(r, g, b);
+        files[id] = fi;
     }
-
-    std::ofstream out(argv[2], std::ofstream::binary);
 
     PNG img;
     img.read(argv[1]);
 
     short w = img.width();
     short h = img.height();
-
-    out.write(reinterpret_cast<const char *>(&w), sizeof(w));
-    out.write(reinterpret_cast<const char *>(&h), sizeof(h));
-
+    int x,y,counter = 0;
     short dst_matrix [w][h];
-    int x,y;
+    int i = 0;
+    int max = w*h;
+
+    PNG* surfaces[2000];
+    for (i = 0; i < 2000; i++) {
+        surfaces[i] = NULL;
+    }
+
+    for (x = 0; x < w; x++) {
+        for (y = 0; y < h; y++) {
+            dst_matrix[x][y] = -1;
+        }
+    }
+
 #pragma omp parallel for
     for (x = 0; x < w; x++) {
+        std::cout << "d: " << counter << endl;
         for (y = 0; y < h; y++) {
             png_bytep p = img.getPixel(x, y);
             RGB c(p[0],p[1],p[2]);
             dst_matrix[x][y] = getObjectForColor(c);
+            if (dst_matrix[x][y] > 2000) {
+                std::cout << "assert! " << x << "," << y << std::endl;
+                assert(false);
+            }
         }
+        counter++;
     }
+    std::cout << "checking" << std::endl;
 
     for (x = 0; x < w; x++) {
-        std::cout << x+1 << "/" << w << endl;
         for (y = 0; y < h; y++) {
-            short objId = dst_matrix[x][y];;
-            out.write(reinterpret_cast<const char *>(&objId), sizeof(objId));
+            if (dst_matrix[x][y] > 2000) {
+                std::cout << x << "," << y << std::endl;
+            }
         }
     }
-    out.close();
 
+    std::string res = "resources/graficos/";
+    std::string output = "output/";
+    std::string ext = ".png";
+    PNG* sp;
+    std::cout << "sprites" << std::endl;
+    counter = 0;
+    for (x = 0; x < w; x++) {
+        // std::cout << "s: " << counter << endl;
+        for (y = 0; y < h; y++) {
+            short objId = dst_matrix[x][y];
+            if (objId > 0 && surfaces[objId] == NULL) {
+                sp = new PNG();
+                std::string str = res + std::to_string(files[objId]) + ext;
+                const char* filename = str.c_str();
+                std::cout << "sprite " << objId << "..." << "\r";
+                sp->read(filename);
+                surfaces[objId] = sp;
+                std::cout << "sprite " << objId << "... " << "Done!" << endl;                
+            }
+        }
+        // counter++;
+    }
 
-
+    PNG image;
+    image.create(w*32, h*32);
+    std::cout << std::endl;
+    for (x = 0; x < w; x++) {
+        for (y = 0; y < h; y++) { 
+           short objId = dst_matrix[x][y];
+            if (objId < 0 || objId > 2000) {
+                std::cout << "assert! " << objId << " en " << x << "," << y << std::endl;
+                assert(false);
+            }
+            image.paste(*surfaces[objId], x*32, y*32);
+        }
+    }
+    // const char* f = currentDateTime().c_str();
+    // std::cout << f << std::endl; 
+    std::cout << std::endl;
+    image.write("bbbbbbbb.png");
+    PNG* ap; 
+    for (i = 0; i < 2000; i++) {
+        if (surfaces[i] != NULL) delete surfaces[i];
+    }
 
     return 0;
 }
-
