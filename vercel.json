@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "cp resources/tiles.png resources/tiles.tsv web/ && cp test.png web/sample.png",
+  "outputDirectory": "web",
+  "headers": [
+    {
+      "source": "/objetismo.wasm",
+      "headers": [{ "key": "Content-Type", "value": "application/wasm" }]
+    }
+  ]
+}

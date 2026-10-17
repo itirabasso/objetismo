@@ -1,0 +1,9 @@
+# Only what the static site needs (see vercel.json).
+/*
+!/web
+!/resources
+/resources/*
+!/resources/tiles.png
+!/resources/tiles.tsv
+!/test.png
+!/vercel.json

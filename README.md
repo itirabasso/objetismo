@@ -28,6 +28,26 @@ Needs a C++17 compiler, libpng and pkg-config (OpenMP is used if available).
 The tile set is dark (the brightest tile has a lightness of about 68 out of
 100), so bright images come out dimmer than the original.
 
+## Web version
+
+`web/` is the same tool as a static page: the matching code in `objetismo.h`
+is compiled to WebAssembly and runs in the visitor's browser, split across a
+pool of Web Workers (the browser's stand-in for OpenMP), and the mosaic is
+drawn on a canvas from `tiles.png`. Nothing is uploaded, so the site needs no
+server and deploys to Vercel as plain files (see `vercel.json`).
+
+    make serve       # copies the tile set next to the page, serves http://localhost:8000
+    make wasm        # rebuilds web/objetismo.{js,wasm} after changing objetismo.h
+    make test-wasm   # checks the WebAssembly build picks the same tiles as ./objetismo
+
+`make wasm` uses `emcc` if it is installed and the `emscripten/emsdk` Docker
+image otherwise. Its output is committed, so deploying needs no toolchain.
+`make test-wasm` needs Node.js.
+
+Browsers limit a canvas to about 16.7 million pixels (Safari), so large
+mosaics are drawn with smaller tiles; the page says when it does that. Use the
+CLI for full-size output beyond that.
+
 ## Tile set
 
 `resources/tiles.png` holds the 477 distinct 32x32 item tiles, 16 per row, and

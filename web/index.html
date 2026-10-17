@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>objetismo</title>
+<meta name="description" content="Rebuild any image as a mosaic of Argentum Online item sprites, right in your browser.">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0b0c;
+    --panel: #151517;
+    --line: #2a2a2e;
+    --text: #e8e6e3;
+    --muted: #9a968f;
+    --accent: #d9a441;
+    --error: #ff7b72;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-areas: "side main";
+  }
+  aside {
+    grid-area: side;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  h1 { margin: 0; font-size: 26px; letter-spacing: 0.02em; }
+  h1 span { color: var(--accent); }
+  .lede { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  label, .label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+  .pick { display: flex; gap: 8px; }
+  .pick > * { flex: 1; text-align: center; white-space: nowrap; }
+  button, .button, select, input[type=number] {
+    font: inherit;
+    color: var(--text);
+    background: #1f1f23;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 7px 12px;
+  }
+  button, .button { cursor: pointer; }
+  button:hover:not(:disabled), .button:hover { border-color: var(--accent); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  .primary { background: var(--accent); color: #17130a; border-color: var(--accent); font-weight: 600; }
+  .primary:hover:not(:disabled) { filter: brightness(1.08); }
+  input[type=file] { display: none; }
+  label.button { display: inline-block; margin: 0; font-size: 15px; text-transform: none; letter-spacing: 0; color: #17130a; }
+  .row { display: flex; gap: 10px; align-items: center; }
+  input[type=range] { flex: 1; accent-color: var(--accent); }
+  input[type=number] { width: 72px; padding: 5px 8px; }
+  select { width: 100%; }
+  .source { margin-top: 12px; }
+  #original { display: block; max-width: 100%; max-height: 180px; border-radius: 4px; }
+  #source-size { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .when-image { display: none; }
+  body.has-image .when-image { display: block; }
+  aside footer { margin-top: auto; font-size: 12px; color: var(--muted); }
+  a { color: var(--accent); }
+
+  main {
+    grid-area: main;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  #status { margin: 0; color: var(--muted); font-size: 13px; min-height: 1.5em; }
+  #status.error { color: var(--error); }
+  body.busy #status::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--accent); animation: pulse 0.8s infinite alternate; }
+  @keyframes pulse { from { opacity: 0.2; } to { opacity: 1; } }
+  .stage {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    background: #000;
+    overflow: auto;
+    min-height: 320px;
+  }
+  body.has-image .stage { border-style: solid; }
+  body.dragging .stage { border-color: var(--accent); }
+  #mosaic { display: none; max-width: 100%; max-height: calc(100vh - 120px); }
+  body.has-image #mosaic { display: block; }
+  body.busy #mosaic { opacity: 0.6; }
+  .empty { color: var(--muted); text-align: center; padding: 24px; }
+  body.has-image .empty { display: none; }
+  #tip {
+    position: fixed;
+    pointer-events: none;
+    background: #000d;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 13px;
+    max-width: 320px;
+  }
+
+  @media (max-width: 760px) {
+    body { grid-template-columns: 1fr; grid-template-areas: "side" "main"; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); padding: 20px 16px; }
+    main { padding: 16px; }
+    #mosaic { max-height: none; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <div>
+    <h1>objet<span>ismo</span></h1>
+    <p class="lede">Rebuilds an image out of Argentum Online item sprites. It all runs in your browser; the image never leaves your device.</p>
+  </div>
+
+  <div>
+    <span class="label">Image</span>
+    <div class="pick">
+      <label class="button primary" for="file">Choose image…</label>
+      <input type="file" id="file" accept="image/*">
+      <button id="sample">Try a sample</button>
+    </div>
+    <div class="when-image source">
+      <canvas id="original" width="0" height="0"></canvas>
+      <div id="source-size"></div>
+    </div>
+  </div>
+
+  <div>
+    <label for="width">Width in tiles</label>
+    <div class="row">
+      <input type="range" id="width" min="4" max="400" value="80">
+      <input type="number" id="width-value" min="4" max="400" value="80" aria-label="Width in tiles">
+    </div>
+  </div>
+
+  <div>
+    <label for="metric">Color difference</label>
+    <select id="metric">
+      <option value="de2000">CIEDE2000 (closer to the eye)</option>
+      <option value="cie76">CIE76 (plain Lab distance)</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="tile-px">Tile size in the output</label>
+    <select id="tile-px">
+      <option value="32">32 px (original sprites)</option>
+      <option value="16">16 px</option>
+      <option value="8">8 px</option>
+      <option value="4">4 px</option>
+    </select>
+  </div>
+
+  <button id="download" class="primary" disabled>Download PNG</button>
+
+  <footer>
+    Each cell becomes the item whose color, on the black background, is closest in CIELAB.
+    The brightest tile has a lightness of about 68 out of 100, so light images come out dimmer.
+    <br><br>
+    <a href="https://github.com/itirabasso/objetismo">Source on GitHub</a> · GPL-3.0
+  </footer>
+</aside>
+
+<main>
+  <p id="status">Loading…</p>
+  <div class="stage">
+    <div class="empty">Drop, paste or choose an image to start.</div>
+    <canvas id="mosaic" width="0" height="0"></canvas>
+  </div>
+</main>
+
+<div id="tip" hidden></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
