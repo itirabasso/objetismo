@@ -8,6 +8,8 @@ const MAX_CANVAS_AREA = 16_777_216;
 const MAX_CANVAS_SIDE = 16_384;
 const MAX_INPUT_PIXELS = 50_000_000;
 const MAX_COLS = 400;
+const MAX_TILE_ON_SCREEN = 256;  // largest a tile gets when zoomed in, in CSS pixels
+const ZOOM_STEP = 1.5;
 
 // ---- workers ----------------------------------------------------------------
 
@@ -176,8 +178,11 @@ function draw() {
   const t = state.tilePx = Math.max(1, Math.min(wanted, fit));
 
   const canvas = $('mosaic');
+  const resized = canvas.width !== cols * t || canvas.height !== rows * t;
   canvas.width = cols * t;
   canvas.height = rows * t;
+  if (resized) view.zoom = null;
+  applyZoom();
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingQuality = 'high';
   ctx.fillStyle = '#000';
@@ -202,7 +207,7 @@ function draw() {
 
 function showTile(e) {
   const tip = $('tip');
-  if (!state.mosaic) return;
+  if (!state.mosaic || view.pan) return;
   const canvas = $('mosaic');
   const r = canvas.getBoundingClientRect();
   const x = Math.floor((e.clientX - r.left) / r.width * state.mosaic.cols);
@@ -217,6 +222,108 @@ function showTile(e) {
   tip.hidden = false;
   tip.style.left = `${e.clientX + 14}px`;
   tip.style.top = `${e.clientY + 14}px`;
+}
+
+// ---- zoom -------------------------------------------------------------------
+
+// view.zoom is CSS pixels per mosaic pixel, or null to fit the whole mosaic.
+const view = { zoom: null, pan: null };
+
+function zoomLimits() {
+  const stage = $('stage'), canvas = $('mosaic');
+  const fit = canvas.width
+    ? Math.min(1, stage.clientWidth / canvas.width, stage.clientHeight / canvas.height) : 1;
+  return [fit, Math.max(fit, MAX_TILE_ON_SCREEN / state.tilePx)];
+}
+
+const currentZoom = () => view.zoom ?? zoomLimits()[0];
+
+function applyZoom() {
+  const stage = $('stage'), canvas = $('mosaic');
+  const [min, max] = zoomLimits();
+  const z = view.zoom ?? min;
+  canvas.style.width = `${canvas.width * z}px`;
+  canvas.style.height = `${canvas.height * z}px`;
+  canvas.classList.toggle('magnified', z > 1);
+  stage.classList.toggle('zoomed', stage.scrollWidth > stage.clientWidth ||
+                                   stage.scrollHeight > stage.clientHeight);
+  // Shown relative to the sprites' own size, whatever tile size they are drawn at.
+  const size = state.tiles ? state.tiles.size : 32;
+  $('zoom-level').textContent = `${Math.round(z * state.tilePx / size * 100)}%`;
+  $('zoom-out').disabled = z <= min * 1.001;
+  $('zoom-in').disabled = z >= max * 0.999;
+}
+
+// Zooms to z, keeping the point of the mosaic under (cx, cy) in place
+// (the middle of the stage by default).
+function setZoom(z, cx, cy) {
+  const stage = $('stage'), canvas = $('mosaic');
+  const [min, max] = zoomLimits();
+  z = Math.max(min, Math.min(max, z));
+  const box = stage.getBoundingClientRect();
+  if (cx === undefined) [cx, cy] = [box.left + box.width / 2, box.top + box.height / 2];
+  const before = canvas.getBoundingClientRect();
+  const px = (cx - before.left) / before.width * canvas.width;
+  const py = (cy - before.top) / before.height * canvas.height;
+  view.zoom = z <= min ? null : z;
+  applyZoom();
+  const after = canvas.getBoundingClientRect();
+  stage.scrollLeft += after.left + px * z - cx;
+  stage.scrollTop += after.top + py * z - cy;
+}
+
+function bindZoom() {
+  const stage = $('stage');
+  $('zoom-in').addEventListener('click', () => setZoom(currentZoom() * ZOOM_STEP));
+  $('zoom-out').addEventListener('click', () => setZoom(currentZoom() / ZOOM_STEP));
+  $('zoom-fit').addEventListener('click', () => setZoom(0));
+  $('zoom-level').addEventListener('click', () => setZoom(state.tiles.size / state.tilePx));
+
+  stage.addEventListener('wheel', (e) => {
+    if (!state.mosaic) return;
+    e.preventDefault();
+    const speed = e.deltaMode === WheelEvent.DOM_DELTA_PIXEL ? 0.002 : 0.05;
+    setZoom(currentZoom() * Math.exp(-e.deltaY * speed), e.clientX, e.clientY);
+  }, { passive: false });
+
+  // Drag to pan with the mouse; touch keeps its native scrolling.
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse' || e.button !== 0 || !stage.classList.contains('zoomed')) return;
+    e.preventDefault();
+    view.pan = { x: e.clientX, y: e.clientY, left: stage.scrollLeft, top: stage.scrollTop };
+    stage.setPointerCapture(e.pointerId);
+    stage.classList.add('panning');
+    $('tip').hidden = true;
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!view.pan) return;
+    stage.scrollLeft = view.pan.left - (e.clientX - view.pan.x);
+    stage.scrollTop = view.pan.top - (e.clientY - view.pan.y);
+  });
+  const endPan = () => {
+    view.pan = null;
+    stage.classList.remove('panning');
+  };
+  stage.addEventListener('pointerup', endPan);
+  stage.addEventListener('pointercancel', endPan);
+
+  document.addEventListener('keydown', (e) => {
+    if (!state.mosaic || e.ctrlKey || e.metaKey || e.altKey ||
+        e.target.closest('input, select, textarea')) return;
+    const keys = {
+      '+': () => setZoom(currentZoom() * ZOOM_STEP),
+      '=': () => setZoom(currentZoom() * ZOOM_STEP),
+      '-': () => setZoom(currentZoom() / ZOOM_STEP),
+      '0': () => setZoom(0),
+      '1': () => setZoom(state.tiles.size / state.tilePx),
+    };
+    if (keys[e.key]) {
+      e.preventDefault();
+      keys[e.key]();
+    }
+  });
+
+  new ResizeObserver(() => state.mosaic && applyZoom()).observe(stage);
 }
 
 // ---- controls ---------------------------------------------------------------
@@ -286,6 +393,7 @@ function bindControls() {
 
 async function main() {
   bindControls();
+  bindZoom();
   try {
     const [tsv, atlas] = await Promise.all([
       fetch('tiles.tsv').then((r) => {

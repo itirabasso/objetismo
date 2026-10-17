@@ -68,6 +68,7 @@
   body.has-image .when-image { display: block; }
   aside footer { margin-top: auto; font-size: 12px; color: var(--muted); }
   a { color: var(--accent); }
+  kbd { font: 11px ui-monospace, monospace; padding: 0 4px; border: 1px solid var(--line); border-radius: 3px; }
 
   main {
     grid-area: main;
@@ -76,27 +77,48 @@
     flex-direction: column;
     gap: 12px;
     min-width: 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
   }
   #status { margin: 0; color: var(--muted); font-size: 13px; min-height: 1.5em; }
   #status.error { color: var(--error); }
   body.busy #status::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--accent); animation: pulse 0.8s infinite alternate; }
   @keyframes pulse { from { opacity: 0.2; } to { opacity: 1; } }
+  .viewer { position: relative; flex: 1; min-height: 320px; }
   .stage {
-    flex: 1;
-    display: grid;
-    place-items: center;
+    position: absolute;
+    inset: 0;
+    display: flex;
     border: 1px dashed var(--line);
     border-radius: 10px;
     background: #000;
     overflow: auto;
-    min-height: 320px;
   }
   body.has-image .stage { border-style: solid; }
   body.dragging .stage { border-color: var(--accent); }
-  #mosaic { display: none; max-width: 100%; max-height: calc(100vh - 120px); }
+  .stage.zoomed { cursor: grab; }
+  .stage.panning { cursor: grabbing; }
+  /* margin: auto centers the mosaic while it fits and lets it scroll once it doesn't. */
+  #mosaic { display: none; margin: auto; flex: none; }
+  #mosaic.magnified { image-rendering: pixelated; }
   body.has-image #mosaic { display: block; }
   body.busy #mosaic { opacity: 0.6; }
-  .empty { color: var(--muted); text-align: center; padding: 24px; }
+  .zoom {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    display: none;
+    gap: 4px;
+    padding: 4px;
+    background: #151517e6;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  body.has-image .zoom { display: flex; }
+  .zoom button { padding: 4px 10px; min-width: 34px; }
+  #zoom-level { min-width: 64px; font-variant-numeric: tabular-nums; }
+  .empty { margin: auto; color: var(--muted); text-align: center; padding: 24px; }
   body.has-image .empty { display: none; }
   #tip {
     position: fixed;
@@ -112,8 +134,7 @@
   @media (max-width: 760px) {
     body { grid-template-columns: 1fr; grid-template-areas: "side" "main"; }
     aside { border-right: 0; border-bottom: 1px solid var(--line); padding: 20px 16px; }
-    main { padding: 16px; }
-    #mosaic { max-height: none; }
+    main { padding: 16px; height: 80vh; position: static; }
   }
 </style>
 </head>
@@ -169,15 +190,25 @@
     Each cell becomes the item whose color, on the black background, is closest in CIELAB.
     The brightest tile has a lightness of about 68 out of 100, so light images come out dimmer.
     <br><br>
+    Zoom with the mouse wheel, the buttons or <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> <kbd>1</kbd>, and drag to move around. Hover a tile to see its item.
+    <br><br>
     <a href="https://github.com/itirabasso/objetismo">Source on GitHub</a> · GPL-3.0
   </footer>
 </aside>
 
 <main>
   <p id="status">Loading…</p>
-  <div class="stage">
-    <div class="empty">Drop, paste or choose an image to start.</div>
-    <canvas id="mosaic" width="0" height="0"></canvas>
+  <div class="viewer">
+    <div class="stage" id="stage">
+      <div class="empty">Drop, paste or choose an image to start.</div>
+      <canvas id="mosaic" width="0" height="0"></canvas>
+    </div>
+    <div class="zoom" role="toolbar" aria-label="Zoom">
+      <button id="zoom-out" title="Zoom out (−)" aria-label="Zoom out">−</button>
+      <button id="zoom-level" title="Actual size (1)">100%</button>
+      <button id="zoom-in" title="Zoom in (+)" aria-label="Zoom in">+</button>
+      <button id="zoom-fit" title="Fit (0)">Fit</button>
+    </div>
   </div>
 </main>
 
