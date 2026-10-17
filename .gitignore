@@ -1,3 +1,6 @@
+objetismo
+objetismo-asan
+output/
+__pycache__/
 resources/graficos/*.bmp
 resources/graficos/*.png
-objetismo

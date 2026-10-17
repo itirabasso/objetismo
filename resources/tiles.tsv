@@ -1,0 +1,479 @@
+# objetismo tiles: tile_size=32 cols=16 count=477
+# index	L	a	b	coverage	object_ids	object_names
+0	22.2946	20.6927	12.7572	0.2314	1,64,467	Manzana Roja | Manzana Roja | Manzana Roja (Newbie)
+1	23.1989	-0.2674	3.2446	0.1025	2,861	Espada Larga | Espada (Newbie)
+2	23.0345	3.2758	0.4547	0.2500	3	Hacha
+3	11.4364	3.0181	5.2695	0.0996	9	Horquilla
+4	27.2032	10.5439	16.6231	0.6357	10	Cofre Abierto
+5	26.0664	10.3251	16.3754	0.4512	11	Cofre Cerrado
+6	40.8960	3.9864	45.6125	0.3291	12,618	Monedas de Oro | Monedas de Oro
+7	15.5023	2.7247	11.5931	0.0391	14,54,65,69,73,87,91,95,99,103,107,111,115,119,140,174,178,182,183,266,270,274,278,282,286,290,294,298,302,306,310,314,323,327,331,335,339,343,347,351,355,376,420,424,428,432,436,440,444,448,452,583,587,591,595,599,603,607,611	Llave | Llave Ullathorpe Casa Nro 1 | Llave Ullathorpe Casa Nro 2 | Llave Ullathorpe Casa Nro 3 | Llave Ullathorpe Casa Nro 4 | Llave Nix casa Nro 1 | Llave Nix Casa Nro 2 | Llave Nix Casa Nro 3 | Llave Nix Casa Nro 4 | Llave Nix Casa Nro 5 | Llave Nix Casa Nro 6 | Llave Nix Casa Nro 7 | Llave Nix Casa Nro 8 | Llave Nix Casa Nro 9 | Llave Nix Mansión | Llave Catacumbas de Ullathorpe | Llave Dungeon Maleheing | Llave Dungeon Maleheing | Llave Fuerte | Llave Banderbill Casa Nro 1 | Llave Banderbill Casa Nro 2 | Llave Banderbill Casa Nro 3 | Llave Banderbill Casa Nro 4 | Llave Banderbill Casa Nro 5 | Llave Banderbill Casa Nro 6 | Llave Banderbill Casa Nro 7 | Llave Banderbill Casa Nro 8 | Llave Banderbill Casa Nro 9 | Llave del Gran Consejo | Llave Bóveda del Gran Consejo | Llave Bóveda del Gran Consejo | Llave del la Bóveda Goliath | Llave Banderbill Casa Nro 10 | Llave Banderbill Casa Nro 11 | Llave Banderbill Casa Nro 12 | Llave Banderbill Casa Nro 13 | Llave Banderbill Casa Nro 14 | Llave Banderbill Casa Nro 15 | Llave Banderbill Casa Nro 16 | Llave Banderbill Casa Nro 17 | Llave Banderbill Casa Nro 18 | Llave Isla Beleta | Llave Lindos Casa Nro 1 | Llave Lindos Casa Nro 2 | Llave Lindos Casa Nro 3 | Llave Lindos Casa Nro 4 | Llave Lindos Casa Nro 5 | Llave Lindos Casa Nro 6 | Llave Abadía de Lindos | Llave Vault de la Abadía de Lindos | Llave Prisión de Banderbill | Llave Arkhein Casa Nro 1 | Llave Arkhein Casa Nro 2 | Llave Arkhein Casa Nro 3 | Llave Arkhein Casa Nro 4 | Llave Arkhein Casa Nro 5 | Llave Arkhein Casa Nro 6 | Llave Arkhein Casa Nro 7 | Llave Arkhein Casa Nro 8
+8	12.5424	1.3388	3.2880	0.0576	15,460,619	Daga | Daga (Newbie) | Daga Envenenada
+9	18.6820	-0.3966	3.7186	0.1650	19	Espada Dos Manos
+10	39.3192	0.1144	0.0404	0.9551	20,368,371,535,620,642,643,644,703,711,712,713,714,715,868,869,870,871,872	Lápida | Lápida | Tumba de Nebeth | Tumba de Gulfas Morgolock | Lápida | Tumba de Calixto | Tumba de Lobonegro | Tumba de Almendra | Tumba de Cronos | Tumba de Valkira | Tumba de Jennifer | Tumba de Jareth | Tumba de Gold Fire | Tumba de Amenakhte | Tumba de Chatillon | Tumba de Nightsorrow | Tumba de Shep | Tumba de Patrick | Tumba de EL OSO
+11	38.8350	5.9112	17.0094	0.2881	21	Porción de Tarta
+12	30.0500	9.9367	19.8330	0.3965	22	Frutas del Bosque
+13	30.7379	4.5560	13.0833	0.2520	23	Pan de Trigo
+14	39.7453	7.9522	16.2001	0.3574	24	Pan de Maíz
+15	36.7366	6.7057	31.5776	0.4199	25	Pastel
+16	27.6247	0.9025	17.1368	0.4355	26	Pollo
+17	32.6499	25.2713	12.3927	0.2705	27	Chuleta
+18	46.0251	4.0666	24.4494	0.3408	28	Queso de Cabra
+19	31.2244	9.7841	4.6510	0.2646	29,81	Sandía | Sandía
+20	21.8710	14.3728	30.1954	0.3428	30,1046,1118	Armadura de Cuero | Armadura de Cuero (H/E/EO) (Newbie) | Armadura de Cuero Especial
+21	39.9451	-1.4016	5.6028	0.3672	31,463	Vestimentas Comunes | Vestimentas Comunes (Newbie)
+22	26.3305	29.4582	-49.6546	0.3770	32,464	Vestimentas Comunes | Vestimentas Comunes (Newbie)
+23	23.1169	27.0998	1.2257	0.3770	35,465	Vestimentas Comunes | Vestimentas Comunes (Newbie)
+24	22.0232	-1.6243	12.6108	0.1670	36,855	Poción Amarilla | Poción Amarilla (Newbie)
+25	18.0034	12.7894	-24.4586	0.2197	37,856	Poción Azul | Poción Azul (Newbie)
+26	19.1383	12.3815	5.8085	0.1992	38,461,857	Poción Roja | Poción Roja (Newbie) | Poción Roja (Newbie)
+27	20.5398	-11.4670	11.0321	0.1670	39,462,858	Poción Verde | Poción Verde (Newbie) | Poción Verde (Newbie)
+28	67.6121	-1.0402	13.9013	0.8525	40,236	Atlas Argentum | Atlas Argentum
+29	52.2315	1.5359	26.4706	0.6367	41	Libro Antiguo
+30	15.2126	9.8489	9.1111	0.1416	42	Vino
+31	21.8969	-7.8042	6.1287	0.1875	43,468	Botella de Agua | Botella de Agua (Newbie)
+32	33.9154	1.8733	-1.1224	0.3389	45	Ropa de Clan
+33	27.4821	6.8535	15.2194	0.5625	58	Leña
+34	20.9335	0.1593	3.8795	0.3027	80	Ropa de Clan
+35	14.8773	0.1320	0.0911	0.1836	123	Espada Vikinga
+36	14.3300	1.6455	2.0075	0.1250	124	Katana
+37	29.9781	-2.0033	6.2519	0.1787	125	Sable
+38	13.9190	3.9537	2.6652	0.1914	126	Hacha Larga de Guerra
+39	17.8688	3.0946	1.7771	0.2314	127,561	Hacha de Leñador | Hacha de Leñador (Newbie)
+40	15.7326	-0.0000	0.0000	0.2891	128	Escudo de Hierro
+41	27.3584	0.6310	2.2812	0.2383	129	Hacha de Guerra Dos Filos
+42	32.5236	-0.0000	0.0000	0.4990	130	Escudo de Plata
+43	34.7526	-0.0000	0.0000	0.4414	131	Casco de Hierro Completo
+44	35.9889	-0.0000	0.0000	0.4971	132,1051	Casco de Hierro | Casco Simple (Newbie)
+45	50.3050	1.6953	-7.2755	0.5342	133,491,625	Escudo Imperial | Escudo Real RM | Escudo AlejoLp
+46	27.0057	34.9764	15.2273	0.4512	135,239,615,636,640,650,656	Túnica Roja Burda | Túnica Roja | Túnica de Archimago (E/G) | Túnica de Líder del Caos (E/G) | Túnica de Archimago del Caos | Túnica Pretoriana | Túnica Pretoriana (E/G)
+47	5.5476	4.0779	5.3308	0.0850	136	Ramitas
+48	13.3809	11.4488	14.0623	0.0967	138,563	Caña de Pescar | Caña de pescar (Newbie)
+49	35.8380	21.7380	43.3481	0.3818	139	Pescado
+50	25.1636	2.2009	2.9441	0.5283	155	Cama
+51	23.1591	4.8624	5.9574	0.5273	156	Cama
+52	31.7162	-0.3432	-0.6908	0.2744	157	Copa de Plata
+53	57.0159	-2.8311	50.8104	0.5068	158	Banana
+54	13.0381	4.3738	5.9520	0.2402	159	Hacha de Bárbaro
+55	19.1893	-2.2631	19.6664	0.2324	160	Cerveza
+56	8.4070	-0.0000	0.0000	0.1768	161	Jugo de Frutas
+57	17.0597	7.2846	16.5969	0.1826	162	Silla
+58	2.4470	3.5704	3.3287	0.0957	163	Cuchara
+59	18.7350	-0.2643	0.2130	0.1279	164	Espada Corta
+60	12.4405	0.7295	0.6402	0.0557	165	Daga +1
+61	22.3005	15.5215	-10.2795	0.2021	166	Poción Violeta
+62	19.0002	23.1101	26.8423	0.8711	167	Mueble Rústico
+63	17.0031	7.3276	16.5862	0.1719	168	Silla
+64	4.0196	-0.2469	0.4595	0.1582	169,384	Yunque | Yunque
+65	18.4397	15.5287	24.5394	0.2734	170	Vestimenta de Mujer (H/E/EO-M)
+66	10.3822	1.6527	5.1565	0.2090	187,562	Piquete de Minero | Piquete de Minero (Newbie)
+67	20.0431	16.3317	16.1049	0.3848	190	Yacimiento de Hierro
+68	26.7878	15.7864	15.1626	0.3926	191	Yacimiento de Hierro
+69	36.8441	9.8051	7.8081	0.5098	192	Minerales de Hierro
+70	46.9936	1.3507	-0.2618	0.4785	193	Minerales de Plata
+71	50.3339	-1.5648	27.7193	0.4824	194	Minerales de Oro
+72	30.6762	0.7190	-0.5803	0.3965	195	Armadura de Placas Completa
+73	31.0609	3.1012	-4.2291	0.4453	196,1044	Túnica de Mago | Túnica (H/E/EO) (Newbie)
+74	44.2982	-0.7181	15.0239	0.4258	197,199,200,201,202,203,204,205,206,207,318,319,361,363,364,380,394,395,396,397,470,471,530,531,532,536,537,538,539,541,542,657,673,705,1007,1066,1067,1068	Flecha Mágica | Dardo Mágico | Antídoto Mágico | Curar Heridas Leves | Toxina | Curar Heridas Graves | Flecha Eléctrica | Proyectil Mágico | Paralizar | Devolver Movilidad | Invisibilidad | Resucitar | Tormenta de Fuego | Ataque de Hambre | Terrible Hambre de Igôr | Invocación de Ultratumba | Llamado a la Naturaleza | Llamado Nigromante | Celeridad | Torpeza | Fuerza | Debilidad | Inmovilizar | Descarga Eléctrica | Apocalipsis | Invocar Elemental de Fuego | Invocar Elemental de Agua | Invocar Elemental de Tierra | Implorar Ayuda | Ceguera | Aturdir | Desaturdir | Mimetismo | El Ojo del Demiurgo | Invocar Mascota | Granize cel | Fuego cel | Fuego coliris
+75	20.0890	0.9249	-0.7948	0.2178	198,564	Serrucho | Serrucho (Newbie)
+76	31.8447	-1.9495	24.0488	0.1699	208,540,863	Flauta Mágica | Flauta | Flauta Mágica (Newbie)
+77	29.5336	24.5593	36.2769	0.3896	230	Yacimiento de Oro
+78	29.5336	24.5593	36.2769	0.3896	231	Yacimiento de Oro
+79	25.6671	2.9290	-8.3724	0.3828	234	Yacimiento de Plata
+80	25.6671	2.9290	-8.3724	0.3828	235	Yacimiento de Plata
+81	18.4975	30.9062	-48.1463	0.4580	238	Túnica Azul
+82	15.3322	0.1091	9.9479	0.2451	240	Ropa de Enano (E/G)
+83	25.7768	2.0619	0.7425	0.3545	243	Armadura de Placas Completa (E/G)
+84	21.8573	-4.9111	12.2705	0.3975	356	Armadura de las Sombras
+85	27.1120	8.4358	21.3123	0.4365	357	Túnica de Monje
+86	19.1073	0.1262	0.1399	0.3467	359	Cota de Mallas
+87	19.6573	-19.1265	15.6575	0.3428	360	Armadura de Cazador
+88	51.9501	3.5623	24.1335	0.6621	362	Tambor
+89	24.1252	3.9925	3.5058	0.2324	365	Daga +2
+90	29.2797	1.3919	3.8677	0.2422	366,559	Daga +3 | Daga de Plata
+91	28.0249	-0.2932	3.9627	0.2422	367	Daga +4
+92	29.8736	26.8775	11.2282	0.5000	369	Armadura Legionaria
+93	16.4330	5.8463	15.0275	0.3262	370,1052	Capucha de Cazador | Capucha de Cazador (Newbie)
+94	32.6063	6.5901	-14.4327	0.5869	372	Manto de Sacerdote del Imperio
+95	40.7893	4.0032	0.9394	0.4199	379	Armadura Legionaria (E/G)
+96	16.7901	36.6765	25.2594	0.3564	381	Túnica Antigua
+97	47.9820	3.4306	-9.8365	0.4082	382	Vestido Azul (H/E/EO-M)
+98	15.2989	4.5943	-23.9132	0.3047	383	Sombrero Mágico
+99	22.5876	8.2705	6.9822	0.2607	385	Fragua
+100	14.3621	18.5574	20.8289	0.3965	386	Lingote de Hierro
+101	44.3303	1.2277	0.7210	0.4004	387	Lingote de Plata
+102	44.0359	6.8853	25.9492	0.4004	388	Lingote de Oro
+103	17.0099	3.9363	13.9043	0.1963	389,565	Martillo de Herrero | Martillo de Herrero (Newbie)
+104	30.5299	1.7494	0.5055	0.3965	390	Armadura de Placas Completa +1
+105	32.0680	0.1940	-1.0471	0.4326	391	Armadura de Placas Completa +2
+106	25.4990	1.2574	-2.8904	0.3545	392	Armadura de Placas Completa +1 (E/G)
+107	28.2693	2.0604	1.4581	0.4043	393	Armadura de Placas Completa +2 (E/G)
+108	12.3471	3.6441	9.8849	0.2920	398	Garrote
+109	34.4173	0.6076	2.6809	0.2441	399	Cimitarra
+110	12.1706	5.6533	3.5519	0.2246	400	Vara de Mago
+111	10.4756	1.7475	4.0057	0.2852	401	Martillo de Guerra
+112	31.1493	8.0428	26.0494	0.2656	402,556	Espada Mata Dragones | Espada Mata Dragones NatOs
+113	24.7796	1.2695	1.6056	0.2119	403	Espada de Plata
+114	32.2708	-6.4953	23.4480	0.6543	404,1048	Escudo de Tortuga | Escudo (Newbie)
+115	54.6269	0.1061	0.2947	0.5908	405	Casco de Plata
+116	32.6227	-0.0000	0.0000	0.2031	406,613	Gema Lunar | Gema Sagrada
+117	17.5390	19.1914	-37.5785	0.2031	407	Gema Azul
+118	32.2495	14.3127	34.1441	0.2031	408	Gema Naranja
+119	35.1595	-13.2111	-12.7139	0.2031	409	Gema Celeste
+120	30.6880	38.0696	-16.9123	0.2031	410	Gema Lila
+121	22.9272	38.1662	24.7341	0.2031	411,560,652	Gema Roja | Gema Sagrada Recuperada por Shadow VX | Piedra de Arghâl
+122	31.8089	-31.7617	32.9913	0.2031	412	Gema Verde
+123	21.0322	34.4142	-31.6762	0.2031	413	Gema Violeta
+124	26.8453	0.2115	2.1847	0.4727	414	Piel Lobo
+125	25.9555	-1.0533	9.9504	0.6299	415	Piel Oso Pardo
+126	62.5524	-2.6526	25.8492	0.6328	416	Piel Oso Polar
+127	17.9458	-0.9519	12.7843	0.2227	466	Harapos de Mendigo (E/G) (Newbie)
+128	19.4368	22.9287	26.5174	0.2910	469,696,864,1119	Laúd | Laúd Mágico | Laúd Mágico (Newbie) | Laúd Mágico Especial
+129	23.9780	3.1953	10.3293	0.4697	473	Flor
+130	24.5865	7.4042	19.7776	0.5527	474,477	Barca | Fragata Fantasmal
+131	25.2226	14.1800	25.0270	0.4502	475	Galera
+132	24.5512	5.0669	13.5143	0.5381	476	Galeón
+133	25.9998	2.4923	11.6075	0.1943	478,859	Arco Simple | Arco (Newbie)
+134	27.2640	0.5045	6.9681	0.1689	479	Arco Compuesto
+135	14.1346	0.5826	0.1952	0.1191	480,860	Flecha | Flecha (Newbie)
+136	17.7456	18.8997	12.6530	0.4434	481,616,638	Armadura de Dragón | Armadura de Guerrero Campeón | Armadura de Guardián del Demonio
+137	25.6027	21.4751	18.6678	0.5635	482	Armadura de Dragón (H/E/EO-M)
+138	22.1233	23.7019	19.4751	0.5117	483,617,639	Armadura de Dragón (E/G) | Armadura de Guerrero Campeón (E/G) | Armadura de Guardián del Demonio (E/G)
+139	12.3394	16.9331	10.1164	0.3750	484	Manto de Noble
+140	25.6716	9.3311	23.0762	0.6328	485,895	Armadura Legendaria | Armadura Legendaria (H/E/EO-M)
+141	19.1557	1.6120	6.4710	0.2861	486	Ropa de Estilo (E/G)
+142	46.2720	-3.5702	2.7372	0.5605	487	Dama de las Tinieblas (H/E/EO-M)
+143	63.9625	0.0238	1.7189	0.4521	488	White Lady (H/E/EO-M)
+144	25.9853	4.5721	-4.4562	0.3525	489	Armadura de Placas Azul
+145	14.7421	6.4051	14.3521	0.3613	490	Ropa de Minero
+146	36.7572	5.3857	-10.1911	0.5029	492	Armadura Real (E/G)
+147	17.5420	6.1738	3.9142	0.2891	493	Armadura de Placas Rojas (H/E/EO-M)
+148	34.0957	16.9556	8.9277	0.6230	494,708	Escudo Legionario RM | Escudo Infernal
+149	12.2368	30.3817	18.9518	0.2617	495	Armadura Escarlata
+150	29.8527	10.2671	-9.9006	0.5791	496,881	Armadura de la Ciénaga | Armadura de la Ciénaga (H/E/EO-M)
+151	33.8351	3.7569	2.7859	0.4189	497,898	Armadura de Placas de Gala | Armadura de Placas de Gala (H/E/EO-M)
+152	8.9735	-0.8151	8.2389	0.1035	498	Sidra
+153	10.0606	7.6448	3.4636	0.2236	499	Cota de Mallas (H/E/EO-M)
+154	27.2535	2.2378	3.0693	0.2803	500,632	Armadura Bruñida (E/G) | Armadura de Guerrero Real (E/G)
+155	22.4975	4.7294	20.3028	0.3672	501	Ropa de Campesino
+156	16.3288	9.1856	18.0043	0.2393	502	Ropa de Campesino (E/G)
+157	30.4524	13.1107	13.5233	0.3213	503	Trampa Visual (H/E/EO-M)
+158	10.8046	29.5207	-15.3202	0.2041	504	Atuendo Combinado (H/E/EO-M)
+159	5.5699	31.1674	-43.7627	0.2041	505	Atuendo Azul (H/E/EO-M)
+160	16.1426	22.6958	-15.3629	0.2490	506	Atuendo Rosa (H/E/EO-M)
+161	10.0661	27.7555	-21.6867	0.2432	507	Ropa Violeta (E/G)
+162	25.9715	18.9374	21.1024	0.2412	508	Ropa Estuaria (H/E/EO-M)
+163	17.2663	32.7769	20.6846	0.3975	509	Túnica de Maga Oscura (H/E/EO-M)
+164	31.1799	8.5645	-14.7407	0.4277	510	Vestido Indulgente (H/E/EO-M)
+165	58.6748	-0.6484	5.0811	0.4033	511	Vestido de Novia Sensual (H/E/EO-M)
+166	41.4494	-10.2938	-7.2081	0.3320	512	Vestido Calipso (E/G-M)
+167	16.9112	28.8520	16.8576	0.4492	513,514	Vestido de Bruja (H/E/EO-M) | Vestido de Bruja Especial (H/E/EO-M)
+168	25.2240	10.6546	31.5375	0.3623	515	Ropa Legendaria
+169	49.1903	3.2937	-13.7828	0.4375	516	Túnica de Maga del Imperio (H/E/EO-M)
+170	38.4502	6.8714	-15.6260	0.4785	517	Túnica de Mago del Imperio
+171	23.6383	42.0285	29.7614	0.4629	518	Túnica de Mago Oscuro
+172	30.5785	9.8126	36.7308	0.3984	519	Túnica Legendaria
+173	34.6641	5.4397	-14.2044	0.3105	520,631	Armadura de Gran Sacerdotisa Imperial (H/E/EO-M) | Armadura de Líder Imperial (H/E/EO-M)
+174	37.2896	12.1236	-18.3783	0.5615	521	Armadura Real
+175	13.4918	4.3177	12.6849	0.1494	522	Hipocrás
+176	25.0290	14.4564	6.7063	0.3350	523	Manto de Sacerdote Demoníaco
+177	18.1047	22.7998	12.6186	0.3408	524	Túnica Roja Especial (E/G)
+178	28.8034	4.0385	10.6875	0.3623	525,633	Túnica Combinada (E/G) | Túnica Marrón de Mago Imperial (E/G)
+179	27.2951	-10.1517	12.3554	0.3760	526	Túnica Combinada de Mujer (E/G-M)
+180	16.5628	-0.3308	11.4303	0.2588	527	Ropa de Enana (E/G-M)
+181	30.8946	-0.2945	8.9917	0.5576	528,614,637,689	Túnica Negra | Túnica de Archimago | Túnica de líder del Caos | Túnica Avernal
+182	23.5529	19.9168	21.4353	0.4385	529	Armadura de Cuero (H/E/EO-M)
+183	15.6014	8.8911	17.6272	0.2139	533	Odre
+184	15.9042	8.3222	17.1932	0.2061	534	Odre Vacía
+185	30.0148	3.1262	7.5778	0.4668	543	Red de Pesca
+186	27.9060	8.9413	13.2411	0.1543	544	Pez Dorado
+187	35.1124	-9.0981	-11.9843	0.4131	545	Pez Espada
+188	35.5080	-21.2918	19.4513	0.4990	546	Merluza
+189	25.9716	10.9950	-17.0703	0.2920	549	Túnica de Mago del Imperio (E/G)
+190	17.1446	-2.2381	10.0043	0.1211	550	Porrón de cerveza
+191	9.9047	-4.4646	3.6182	0.1182	551	Flecha +1
+192	24.1451	0.3276	10.2560	0.1367	552	Flecha +2
+193	15.7461	10.6774	20.5987	0.1562	553	Flecha +3
+194	1.6494	7.3971	2.6064	0.1865	554,674	Sangre | Sangre de Liche
+195	10.9239	31.1436	17.2085	0.2520	555	Sangre
+196	15.2156	5.0813	5.8987	0.1348	557	Vino de canela
+197	14.2654	19.5436	9.6407	0.6123	558	Túnica de Mago Oscuro (E/G)
+198	20.5015	7.7623	1.0525	0.3652	612	Cerveza de los enanos
+199	15.4320	4.4098	10.4499	0.3975	622	Barrilito de cerveza
+200	47.4680	-0.7457	4.8964	0.5664	628,687	Túnica de Archimago Imperial | Túnica Palatina
+201	45.7761	5.9333	-1.7721	0.4980	629	Armadura Nobilísima
+202	60.1532	2.3859	0.8523	0.4766	630,1053	Túnica Celestial | Túnica de Campeón
+203	22.6907	-0.0000	0.0000	0.3252	634,686	Túnica Egregia de Mago Oscuro | Túnica Egregia de Mago Oscuro (E/G)
+204	20.2499	32.3323	14.1337	0.5449	635	Armadura Lóbrega (H/E/EO-M)
+205	30.3910	22.8331	-40.4224	0.3115	641	Ropa de Pordiosero
+206	17.4805	0.0590	0.3668	0.1777	645	Poción Negra
+207	42.7211	15.8474	28.8049	0.4473	646	Túnica Real Pretoriana
+208	14.6430	-11.0105	8.5567	0.2715	648	Armadura de Cazador (E/G)
+209	8.7392	11.5119	13.3340	0.2305	653	Reja
+210	3.7707	6.5505	5.7681	0.1396	654	Reja
+211	5.5629	12.3396	8.5593	0.1611	655	Reja
+212	5.1413	1.2373	4.4449	0.1045	658,862	Vara de Fresno | Bastón de Mago (Newbie)
+213	19.2637	-0.0000	0.0000	0.1240	659,1117	Bastón Nudoso | Bastón Nudoso Especial
+214	8.1796	8.4489	6.6344	0.1113	660	Báculo Engarzado
+215	22.9284	1.3061	-6.4038	0.1943	661	Sombrero de Aprendiz
+216	27.0494	8.1105	10.0780	0.2256	662	Sombrero de Mago
+217	6.0676	5.0919	6.6141	0.1094	663	Arco Simple Reforzado
+218	11.4673	5.4961	10.6809	0.1270	664,1120	Arco Compuesto Reforzado | Arco Compuesto Reforzado Especial
+219	27.2648	-0.1115	9.8786	0.3311	665	Arco de Cazador
+220	17.7351	0.5114	1.3490	0.2451	667	Cota de Mallas (E/G)
+221	19.2750	6.0582	22.3314	0.2715	668,1047	Armadura de Cuero (E/G) | Armadura de Cuero (E/G) (Newbie)
+222	32.7716	17.6873	8.4050	0.4639	669,679	Ropa Real | Túnica Conspicua de Mago Imperial
+223	32.1481	2.9877	-7.2029	0.4160	670,1045	Túnica de Mago (E/G) | Túnica (E/G) (Newbie)
+224	31.0458	8.3690	22.6720	0.4180	671	Túnica de Monje (E/G)
+225	29.1060	0.7669	13.3091	0.4023	672	Armadura de Elite (E/G)
+226	15.0654	4.1625	-10.7447	0.3701	675	Vestimenta Imperial
+227	8.7346	7.7437	-18.2521	0.2861	676	Vestimenta Imperial (E/G)
+228	11.6290	17.1633	7.8872	0.3643	677	Vestimenta Legionaria
+229	8.2568	23.5750	10.5376	0.2861	678	Vestimenta Legionaria (E/G)
+230	20.9421	8.9182	-17.2224	0.3779	680	Armadura de Gran Sacerdote Imperial
+231	33.4902	1.7540	-7.2187	0.3281	681	Armadura Nobilísima (E/G)
+232	30.2849	13.1457	-19.3489	0.3320	682	Túnica Conspicua de Mago Imperial (E/G)
+233	38.9525	19.7064	7.3169	0.5000	683	Armadura Lóbrega
+234	31.6460	13.8612	6.5620	0.5264	684	Armadura de Gran Sacerdote Demoníaco
+235	24.5171	13.6828	7.4760	0.5137	685	Armadura Lóbrega (E/G)
+236	37.3663	-0.6022	4.8644	0.4082	688	Pequeña Túnica Palatina (E/G)
+237	27.7312	-0.3645	8.4164	0.4902	690	Pequeña Túnica Avernal (E/G)
+238	39.1408	1.8601	-5.2847	0.5713	691	Armadura de Ilustre Caballero
+239	38.4794	6.6429	-9.5948	0.5889	693	Armadura Magna (H/E/EO-M)
+240	28.6378	9.5052	-22.1538	0.5029	694	Armadura de Ilustre Caballero (E/G)
+241	13.6058	30.5126	18.0078	0.2793	695	Armadura de Pequeño Pandemonium (E/G)
+242	58.5224	0.9671	0.2991	0.6592	697	Anillo de defensa Mágica
+243	40.8491	-3.6770	4.4342	0.3340	698	Anillo de Resistencia Mágica
+244	37.8044	3.1690	-1.3261	0.4141	699	Anillo de Disolución Mágica
+245	42.0479	0.5160	8.7264	0.3359	700	Anillo de los Dioses
+246	27.7981	15.1985	7.0090	0.4990	701	Armadura Infame
+247	37.8414	11.3298	24.4534	0.3135	707,907	Vestimenta de Noble (E/G) | Túnica Real Pretoriana (E/G)
+248	36.3117	-8.3231	36.3399	0.2803	710	Copa de Oro
+249	12.5970	11.3293	13.0640	0.2471	732	Mesa Circular
+250	37.7560	2.2438	7.1189	0.3027	734	Jarra de Losa
+251	17.0727	-2.3690	19.0702	0.1328	736	Candelabro Simple
+252	4.5230	3.2853	5.7581	0.2354	738	Carcaj
+253	46.2720	-0.9243	8.3353	0.9316	741	Cuadro
+254	35.2469	-4.7508	14.1525	0.6084	742	Cuadro
+255	42.2336	-4.2451	4.6194	0.5752	744	Cuadro
+256	10.0719	11.4917	11.2434	0.3223	749	Carretilla
+257	5.5181	7.5210	6.0057	0.2568	750	Carretilla
+258	19.9455	12.3942	18.3658	0.3301	751	Barril Pequeño
+259	18.4801	11.8814	15.3239	0.2822	752	Barril Pequeño
+260	13.6654	1.6752	4.2017	0.2959	753	Mayal Triple
+261	33.1421	-11.0919	27.6382	0.3203	754	Rábano
+262	12.6487	-0.6067	1.0106	0.4033	755	Tinaja
+263	20.9619	24.7750	29.1849	0.6924	756	Mueble Rústico
+264	13.3708	13.5066	17.0882	0.2422	757	Balde
+265	15.6960	12.4909	10.8977	0.3867	758	Reloj de Arena
+266	8.6537	12.2972	9.0024	0.1416	759	Vasija
+267	24.8373	-2.1779	3.6781	0.1816	767	Margarita
+268	37.5753	6.4488	2.3980	0.2480	768	Hongo
+269	24.9512	1.2429	5.2515	0.4297	769	Hongos
+270	21.6841	-6.4599	8.5179	0.6133	770	Algas
+271	39.3492	0.7830	31.5359	0.2324	775	Hipocampo
+272	32.4716	7.1657	13.8657	0.4590	798	Desperdicios
+273	28.2183	8.9329	26.3658	0.2949	799	Banqueta
+274	40.6368	0.4279	16.5043	0.1650	809	Hongos Amarillos
+275	22.7196	-3.0604	-8.2104	0.1240	810	Hongos Azules
+276	27.0300	14.4547	10.4990	0.1729	811	Hongos Rojos
+277	28.2821	11.0330	-17.5271	0.1729	812	Hongos Violetas
+278	14.6151	-14.8895	18.3579	0.1914	820	Hojitas
+279	3.8711	2.5594	1.5779	0.0635	833	Taza
+280	29.1551	-8.2947	18.4432	0.1963	851	Laureles
+281	21.0577	-4.7222	11.6137	0.3652	854	Armadura de las Sombras (E/G)
+282	21.6048	7.3529	24.5265	0.3682	865	Alforja
+283	21.5026	9.4588	28.4727	0.3086	866	Mochila de Viajero
+284	33.1411	-20.5730	-0.9344	0.4150	867	Túnica de Gnomo (E/G)
+285	18.5480	-6.3140	6.2488	0.4043	873	Guantes de Hurto
+286	33.1161	4.3882	19.7486	0.2158	874	Cuerno de llamado Armada
+287	5.3589	9.1162	7.5566	0.1514	875	Cuerno de llamado Legionario
+288	11.0768	-0.0000	0.0000	0.4053	876	Vestimenta de Game Master
+289	22.4468	0.8447	0.9738	0.3740	877	Túnica de Gran Hechicero (E/G)
+290	22.3328	0.9144	0.8444	0.3643	878,936	Túnica de Gran Hechicera (E/G-M) | Túnica de Gran Hechicera (E/G-M)
+291	18.6699	23.9757	22.9793	0.3301	879	Vestido Bordado de Gala (H/E/EO-M)
+292	23.2220	4.8074	-23.7057	0.3271	880	Túnica del Oráculo (H/E/EO-M)
+293	22.2718	0.2767	0.2768	0.1924	882	Anillas Livianas de Aventurero (H/E/EO)
+294	36.4086	0.4198	0.2564	0.4941	883	Cota de Anillas Compuesta (H/E/EO)
+295	30.4407	0.2431	0.1354	0.3584	884	Cota de Anillas Compuesta (H/E/EO-M)
+296	18.8922	2.4531	3.4509	0.3877	885	Armadura Liviana de Hierro (H/E/EO)
+297	27.6160	-12.6503	5.6747	0.4033	886	Vestido de Arquera (H/E/EO-M)
+298	33.1698	3.6670	9.5057	0.3555	887	Cotas de Manto Marrón (H/E/EO)
+299	19.1065	-13.1541	-2.0312	0.3037	888	Brial del Bosque (H/E/EO)
+300	31.1216	0.6050	1.1200	0.5205	889	Anillas Con Manto Verde (H/E/EO)
+301	17.8857	16.2197	26.4029	0.2949	890	Armadura de Cuero de Oso Pardo (H/E/EO)
+302	14.9877	14.6265	22.2838	0.2305	891	Armadura de Cuero de Oso Pardo (H/E/EO-M)
+303	30.3792	6.7118	3.9589	0.3516	892	Coraza Compuesta Roja (H/E/EO-M)
+304	27.2796	-0.1634	1.2019	0.4648	893	Anillas Con Manto Verde (H/E/EO-M)
+305	32.2168	-1.4387	12.8411	0.3369	894	Armadura de Cruzada (H/E/EO-M)
+306	29.0008	2.4226	1.4836	0.4170	896	Túnica de Morgana (H/E/EO-M)
+307	28.6986	1.5211	1.4504	0.3438	897	Cota de Piquero (H/E/EO)
+308	32.6430	0.0528	0.0186	0.3623	899	Cota de Peto Liso (H/E/EO-M)
+309	28.8835	-0.5969	0.6004	0.3623	900	Anillas Con Manto Desgastado (H/E/EO-M)
+310	29.1193	-0.0000	0.0000	0.3047	901	Coraza Compuesta de Mujer (H/E/EO-M)
+311	24.5968	-0.6983	10.1429	0.3379	902	Cota de Mallas Enteriza (H/E/EO-M)
+312	42.6301	-0.8340	6.3614	0.5479	903	Armadura de Campeón (H/E/EO)
+313	30.9248	-0.1130	0.6711	0.3340	904	Placas Combinadas (H/E/EO-M)
+314	40.3083	6.8655	12.4535	0.4912	905	Suprema Armadura Dorada (H/E/EO)
+315	34.2684	5.6273	3.3103	0.4492	906	Manto del Dragón (H/E/EO)
+316	20.4046	-3.8936	2.7994	0.2549	908	Vestimentas de Pescador (E/G)
+317	33.6368	-0.0000	0.0000	0.1387	909	Vestido de Novia (E/G-M)
+318	8.5334	-3.5805	-0.9095	0.2578	910	Atuendo de Gnomo (E/G)
+319	6.7024	5.4733	4.7472	0.1924	911	Vestimenta Bordo de Poblador (E/G)
+320	17.4729	-8.5903	1.0564	0.2422	912	Vestimenta Verde de Poblador (E/G)
+321	16.1900	-8.5451	9.3418	0.2441	913	Ropaje de Ermitaño (E/G)
+322	13.7251	-3.0891	-5.7727	0.2559	914	Ropaje de Aldeana (E/G-M)
+323	23.5419	5.9819	-5.0470	0.2500	915	Ropaje de Aldeano (E/G)
+324	15.1251	24.1921	21.6352	0.2676	916	Vestimenta Elegante (E/G)
+325	6.6378	4.7384	4.9329	0.1973	917	Vestimenta de Minero (E/G)
+326	13.7278	6.6118	13.4640	0.2842	918	Gabán de Cuero Pequeño (E/G)
+327	17.5484	-10.7367	9.4860	0.2646	919	Alifafe de Serpiente (E/G)
+328	21.6218	6.2541	21.5652	0.2197	920	Ropaje de Herrero (E/G)
+329	10.8932	-5.6558	0.3567	0.2070	921	Túnica Sírica Elegante (E/G)
+330	13.3925	7.6348	15.2474	0.1953	922	Traje de Capitán Pirata (E/G)
+331	25.5863	14.6972	9.4664	0.2637	923	Traje de Noble (E/G)
+332	10.3896	-2.5814	-2.7296	0.2266	924	Vestimenta de Explorador (E/G)
+333	15.3120	-2.7062	-8.7242	0.1748	925	Peto de Gladiadora (E/G-M)
+334	19.6992	-0.7895	9.8439	0.1162	926	Hombreras de Amazona (E/G-M)
+335	9.9627	5.8640	4.3109	0.1885	927	Alifafe de Lobo (E/G)
+336	9.8476	-4.3047	3.0429	0.2129	928	Barragán de Cazador (E/G)
+337	10.9133	-3.2720	4.2960	0.2568	929	Barragán Compuesto (E/G)
+338	15.9214	-2.8247	11.0545	0.3076	930	Toga de Aprendiz (E/G)
+339	14.9406	6.7103	-6.3012	0.2305	931	Vestido Elegante Púrpura (E/G-M)
+340	16.9030	4.1879	-0.7783	0.3154	932	Sotana de Gran Hechicero (E/G)
+341	17.4543	-3.6360	2.3237	0.1953	933	Cota Liviana Verde (E/G-M)
+342	16.3807	-1.6165	1.0482	0.2266	934	Cotas Livianas (E/G)
+343	24.2201	-1.4313	1.4268	0.2256	935	Cotas con Peto Compuesto (E/G-M)
+344	18.0871	1.8987	-1.5626	0.2363	937	Cota de Peto Púrpura (E/G)
+345	11.2109	9.9536	0.9027	0.2207	938	Traje de Bruja (E/G-M)
+346	19.1231	9.8583	20.7398	0.2881	939	Túnica de Gala Roja (E/G)
+347	23.1032	0.3817	0.4646	0.2432	940	Cota de Mallas Enteriza (E/G)
+348	21.2184	-9.9444	16.6472	0.2471	941	Traje Seductor de Pitonisa (E/G-M)
+349	23.2416	-8.6908	5.6708	0.2432	942	Vestido de Gala Turquesa (E/G-M)
+350	32.7159	-1.0147	21.5229	0.3369	943	Sobrevesta Élfica (H/E/EO)
+351	55.7292	-0.8490	3.6321	0.4365	944	Vestido Aurë (H/E/EO-M)
+352	23.2293	0.1386	6.8248	0.3477	945	Vestido de Gala Alcarinqua (H/E/EO-M)
+353	18.1240	-0.2888	8.2874	0.3359	946	Vestimentas de Poblador Élfico (H/E/EO)
+354	25.0235	-1.4282	3.2512	0.3701	947	Hábito Liviano de Ritual (H/E/EO)
+355	17.1503	4.2008	3.0402	0.3379	948,985	Vestido Bordado de Elite (H/E/EO-M) | Piwafwi Socere de Lloth (EO-M)
+356	25.7456	-1.7754	3.9359	0.3018	949	Hábito Liviano de Ritual (H/E/EO-M)
+357	28.5118	2.9151	14.5812	0.2734	950	Sírica Élfica Rojiza (H/E/EO-M)
+358	5.2035	3.9319	7.5241	0.1318	951	Prenda de la Naturaleza (H/E/EO-M)
+359	16.4635	-9.7402	13.7271	0.3467	952	Ropa de Explorador Élfico (H/E/EO)
+360	18.9707	4.0247	4.1459	0.3877	953	Manto Élfico Púrpura (H/E/EO-M)
+361	25.8859	-1.5302	3.1709	0.4150	954	Hábito de Ritual de Hombre (H/E/EO)
+362	24.2237	-1.5783	3.4270	0.3838	955	Hábito de Ritual Femenino (H/E/EO-M)
+363	45.5509	-3.1203	9.3647	0.2881	956	Valya Silmeanar (H/E/EO-M)
+364	30.5809	0.5376	5.1595	0.2051	957	Vestido de Enana (E/G-M)
+365	14.1368	2.9241	15.7548	0.2803	958	Vestimenta Común (E/G)
+366	15.7604	7.4766	13.2831	0.2764	959,960	Ropa de Carpintero Enano (E/G) | Ropa de Leñador (E/G)
+367	16.3582	-0.4489	11.9335	0.2666	961	Ropa de Minero (E/G)
+368	25.4748	1.0129	4.0432	0.2656	962	Túnica Elegante (E/G)
+369	19.6000	-2.1766	8.6967	0.1777	963	Ropaje de Luchador de Las Minas (E/G)
+370	17.8327	-3.8356	10.2193	0.3535	964	Ropa de Viajero (E/G)
+371	17.2049	-0.0241	1.3264	0.2842	965	Antigua Armadura Dorada (E/G)
+372	26.7743	11.8282	15.9863	0.2607	966	Alifafe de Pirata (E/G)
+373	16.0720	-7.3595	17.0473	0.2744	967	Ropas de Buscador (E/G)
+374	21.7079	5.8645	9.7276	0.3877	968	Armadura Grabada Completa (E/G)
+375	25.2394	3.5214	18.9748	0.3320	969	Túnica Dorada de Gala (E/G)
+376	28.0362	-0.0659	6.3143	0.2822	970	Armadura de Placas Livianas Thor (E/G)
+377	18.0021	0.1116	0.2607	0.2773	971	Armadura Metal Oscuro (E/G)
+378	13.5862	5.0889	5.2567	0.2793	972	Túnica de Mahal (E/G)
+379	27.5588	-0.1278	5.3994	0.2490	973	Armadura de Placas Livianas Thor (E/G-M)
+380	19.5870	3.6439	9.8532	0.2881	974	Capa de Monje Cocida con Mithril (E/G)
+381	23.6624	1.6132	2.3178	0.2686	975	Cota de Mallas Larga (E/G)
+382	28.0245	-1.6138	5.6214	0.4004	976	Armadura Pesada de Hierro y Bronce (E/G)
+383	10.7230	7.5625	15.5554	0.4463	977	Vestimenta Esclava (EO)
+384	14.9072	-0.7276	2.7214	0.3643	978	Harapos de la Cueva (EO)
+385	13.6473	8.0292	3.3899	0.3672	979	Armadura Maghtere Roja (EO)
+386	17.6571	0.3647	0.1291	0.2637	980	Armadura de Combate Liviana (EO)
+387	11.0488	14.3839	6.5718	0.3535	981	Piwafwi de Fuego (EO)
+388	11.7145	-16.4567	4.0340	0.2461	982	Armadura Melee de Explorador (EO)
+389	4.4397	9.2834	-1.3269	0.3779	983	Piwafwi Purpura del Silencio (EO-M)
+390	9.7987	4.3130	-9.8548	0.3340	984	Piwafwi Alto Narbondel (EO)
+391	29.7163	-2.4128	19.8748	0.4766	986	Túnica de Druida
+392	16.5965	3.6818	2.2866	0.1602	990	Mazo del Juicio
+393	48.8862	-0.0000	0.0000	0.5303	991,1125	Vestimentas Olímpicas (EO) | Vestimenta de Campeón (EO)
+394	38.1646	-0.0000	0.0000	0.2871	992	Vestimentas Olímpicas (EO-M)
+395	25.2764	-1.7821	1.6250	0.0879	993	Vestimentas Olímpicas (E-M)
+396	36.3018	-1.2228	3.0463	0.1719	994,1123	Vestimentas Olímpicas (E) | Vestimenta de Campeón (E/G)
+397	36.4631	-0.4975	5.3023	0.1670	995	Vestimentas Olímpicas (H-M)
+398	42.0948	-1.2351	4.2216	0.2158	996,1124	Vestimentas Olímpicas (H) | Vestimenta de Campeón
+399	34.6015	-0.5053	2.4824	0.1768	998	Vestimentas Olímpicas (G-M)
+400	40.3762	-0.3809	1.8008	0.2383	999	Vestimentas Olímpicas (G)
+401	7.2948	11.6218	5.2608	0.0850	1000	Antorcha Olímpica de Mano
+402	22.5315	-0.8670	4.2345	0.5293	1001	Casco de Águila
+403	18.2006	-0.6957	4.3356	0.4863	1002	Casco de Lobo
+404	18.9460	10.9027	22.6691	0.5498	1003	Casco de Oso
+405	23.7309	16.3177	29.0047	0.4883	1004	Casco de Tigre
+406	29.6699	-5.3757	21.1322	0.2354	1005	Hacha de leña Elfica
+407	30.5062	-1.3682	19.8774	0.5537	1006	Leña Elfica
+408	34.1030	-1.4497	3.6536	0.4541	1009	Cuchillas
+409	11.7996	-2.3531	2.2852	0.1963	1010	Sombrero Pirata
+410	22.4833	2.6997	4.5544	0.5625	1036	Guantes de Lucha
+411	26.1340	19.9922	12.1190	0.5449	1037	Escudo Legionario
+412	48.1864	2.0666	-11.0444	0.4766	1038	Escudo Real
+413	28.5742	6.2732	-14.0408	0.4629	1039	Manto de Sacerdote del Imperio (E/G)
+414	20.5815	6.8392	-13.2131	0.3066	1040	Armadura de Gran Sacerdote Imperial (E/G)
+415	22.0911	13.3654	7.2598	0.3467	1041	Manto de Sacerdote Demoníaco (E/G)
+416	30.3045	11.4472	5.2662	0.4355	1042	Armadura de Gran Sacerdote Demoníaco (E/G)
+417	26.5269	9.7535	-27.2083	0.2686	1049	Laúd Élfico
+418	15.0065	1.4226	18.5180	0.1797	1050	Flauta Élfica
+419	37.0277	8.2183	7.6351	0.4961	1054	Traje invernal del sur
+420	23.6204	6.9014	29.2148	0.2969	1056	Traje de duende (E/G)
+421	30.1459	15.3083	6.1199	0.2188	1057	Sombrero invernal
+422	40.8353	6.5186	11.9674	0.2852	1061	Muffin's
+423	27.7965	1.1389	3.4693	0.1172	1062	Dulces
+424	29.2459	5.9959	10.3102	0.2246	1063	Regalo sorpresa
+425	28.2545	11.2594	9.2248	0.2246	1064	Regalo sorpresa
+426	28.9001	-3.0163	10.6339	0.3037	1065	Regalo sorpresa
+427	37.5835	-2.1844	2.1054	0.5205	1069	Armadura de Asesino de 2da Jerarquía
+428	34.1813	-2.8090	1.3510	0.5234	1070	Armadura de Asesino de 2da Jerarquía (E/G)
+429	25.8992	1.5614	1.7915	0.7793	1071	Armadura de Asesino de 2da Jerarquía
+430	25.0642	1.0917	1.5486	0.6777	1072	Armadura de Asesino de 2da Jerarquía (E/G)
+431	39.0816	-1.0789	-5.5506	0.5137	1073	Armadura de Bandido de 2da Jerarquía
+432	30.0532	-1.2540	-6.4129	0.3809	1074	Armadura de Bandido de 2da Jerarquía (E/G)
+433	27.0873	1.8285	0.7908	0.4414	1075	Armadura de Bandido de 2da Jerarquía
+434	22.2974	0.4919	0.3124	0.3271	1076	Armadura de Bandido de 2da Jerarquía (E/G)
+435	35.3728	5.4586	-5.5977	0.4922	1077	Armadura de Bardo de 2da Jerarquía
+436	34.7112	5.3254	-3.3912	0.4590	1078	Armadura de Bardo de 2da Jerarquía (E/G)
+437	17.1916	2.6491	3.9942	0.4395	1079	Armadura de Bardo de 2da Jerarquía
+438	16.3094	2.6852	3.9883	0.3975	1080	Armadura de Bardo de 2da Jerarquía (E/G)
+439	32.5384	0.0472	-2.6632	0.4639	1081	Armadura de Cazador de 2da Jerarquía
+440	30.3254	-0.0475	-1.7575	0.4688	1082	Armadura de Cazador de 2da Jerarquía (E/G)
+441	19.4317	3.9339	2.5794	0.4951	1083	Armadura de Cazador de 2da Jerarquía
+442	16.9096	3.8177	2.4853	0.3838	1084	Armadura de Cazador de 2da Jerarquía (E/G)
+443	33.0093	1.6240	-2.3692	0.5098	1085	Armadura de Clerigo de 2da Jerarquía
+444	30.2993	1.7234	-2.9495	0.4570	1086	Armadura de Clerigo de 2da Jerarquía (E/G)
+445	30.2738	16.7241	6.9457	0.5312	1087	Armadura de Clerigo de 2da Jerarquía
+446	26.6527	18.3780	7.6752	0.4746	1088	Armadura de Clerigo de 2da Jerarquía (E/G)
+447	42.7224	0.4757	6.9791	0.4844	1089	Armadura de Druida de 2da Jerarquía
+448	42.1437	0.2618	7.4820	0.4365	1090	Armadura de Druida de 2da Jerarquía (E/G)
+449	15.7326	7.3268	3.3465	0.4736	1091	Armadura de Druida de 2da Jerarquía
+450	13.4282	6.4485	3.0634	0.3828	1092	Armadura de Druida de 2da Jerarquía (E/G)
+451	27.3178	2.8144	-3.8677	0.3145	1093	Armadura de Guerrero de 2da Jerarquía
+452	24.4780	2.5347	-2.3567	0.2510	1094	Armadura de Guerrero de 2da Jerarquía (E/G)
+453	17.5777	0.3431	5.0584	0.3584	1095	Armadura de Guerrero de 2da Jerarquía
+454	15.8555	-0.3547	4.2795	0.3086	1096	Armadura de Guerrero de 2da Jerarquía (E/G)
+455	36.3704	2.0918	-7.3484	0.4834	1097	Armadura de Ladron de 2da Jerarquía
+456	32.3940	1.9307	-6.9803	0.3926	1098	Armadura de Ladron de 2da Jerarquía (E/G)
+457	16.9249	21.6240	22.0635	0.4902	1099	Armadura de Ladron de 2da Jerarquía
+458	17.0832	22.9943	22.1960	0.4902	1100	Armadura de Ladron de 2da Jerarquía (E/G)
+459	42.2613	-1.3240	5.6470	0.5020	1101	Armadura de Mago de 2da Jerarquía
+460	40.0761	-1.4714	5.9050	0.4502	1102	Armadura de Mago de 2da Jerarquía (E/G)
+461	16.2778	7.4576	6.9764	0.4805	1103	Armadura de Mago de 2da Jerarquía
+462	14.5211	7.8568	6.2659	0.4082	1104	Armadura de Mago de 2da Jerarquía (E/G)
+463	38.2794	-0.3584	0.9843	0.6465	1105	Armadura de Paladin de 2da Jerarquía
+464	37.1448	-0.3903	1.0728	0.5918	1106	Armadura de Paladin de 2da Jerarquía (E/G)
+465	22.5000	2.3802	5.2899	0.5947	1107	Armadura de Paladin de 2da Jerarquía
+466	22.1259	1.8048	4.8359	0.5537	1108	Armadura de Paladin de 2da Jerarquía (E/G)
+467	38.4690	2.5427	-0.8678	0.4463	1109	Armadura de Pirata de 2da Jerarquía
+468	33.6277	2.2071	0.1797	0.3389	1110	Armadura de Pirata de 2da Jerarquía (E/G)
+469	25.3983	11.1546	15.1377	0.4395	1111	Armadura de Pirata de 2da Jerarquía
+470	21.3671	9.9420	14.3126	0.3643	1112	Armadura de Pirata de 2da Jerarquía (E/G)
+471	41.8941	6.5292	26.4438	0.5537	1113	Corona de Bronce
+472	51.5563	0.7087	-0.8184	0.5020	1114	Corona de Plata
+473	44.1634	-2.7512	29.0341	0.7197	1115	Corona de Oro
+474	16.5086	-0.0667	0.8147	0.6221	1116	Casco de Darth Vader
+475	35.8226	24.2711	13.3373	0.4053	1121	Traje de Navidad
+476	28.5560	1.6420	7.4778	0.4932	1122	Casco de Artista Supremo

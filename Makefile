@@ -1,27 +1,33 @@
-CXXFLAGS=-O3 -std=c++0x -ffast-math -W -Wall -Wextra -pedantic -g
-OPMFLAGS=-fopenmp
-LDFLAGS=-lpng
-BINFILE=objetismo
-DEPS=objetismo.cpp
+CXX ?= g++
+CXXFLAGS ?= -std=c++17 -O2 -Wall -Wextra -pedantic
+OMPFLAGS ?= -fopenmp
+PNG_CFLAGS := $(shell pkg-config --cflags libpng)
+PNG_LIBS := $(shell pkg-config --libs libpng)
+PYTHON ?= python3
 
-$(BINFILE): $(DEPS)
-	# g++ -W -Wall -Wextra -pedantic -o test objetismo.cpp -lpng
-	
-	$(CXX) $(CXXFLAGS) $(OPMFLAGS) $(DEPS) -o $(BINFILE) $(LDFLAGS)
-	# g++ -O3 -march=native -W -Wall -Wextra -pedantic -g objetismo.cpp -o objetismo -lpng
-	# g++ -O3 -W -Wall -Wextra -pedantic -g objetismo.cpp -o objetismo -lpng
-	# g++ -O3 -funsafe-math-optimizations -W -Wall -Wextra -pedantic -g objetismo.cpp -o objetismo -lpng
-val:
-	valgrind --leak-check=full --show-reachable=yes ./$(BINFILE) ab.png
+BIN = objetismo
+SRC = objetismo.cpp
 
-mdebug:
-	g++ -g -std=c++0x -W $(OPMFLAGS) -Wall -Wextra -pedantic -o objetismo objetismo.cpp -lpng
+.PHONY: all tiles test asan clean
 
-debug:
-	g++ -g -std=c++0x -W -Wall -Wextra -pedantic -o objetismo objetismo.cpp -lpng
+all: $(BIN)
 
-prof:
-	valgrind --tool=callgrind $(BINFILE)
+$(BIN): $(SRC)
+	$(CXX) $(CXXFLAGS) $(OMPFLAGS) $(PNG_CFLAGS) $< -o $@ $(LDFLAGS) $(PNG_LIBS)
+
+# Address + undefined behavior sanitizers, single-threaded build.
+$(BIN)-asan: $(SRC)
+	$(CXX) -std=c++17 -g -O1 -Wall -Wextra -Wno-unknown-pragmas -fsanitize=address,undefined -fno-omit-frame-pointer \
+		$(PNG_CFLAGS) $< -o $@ $(LDFLAGS) $(PNG_LIBS)
+
+asan: $(BIN)-asan
+
+# Regenerates resources/tiles.png and resources/tiles.tsv from the game data.
+tiles:
+	$(PYTHON) -I tools/build_tiles.py
+
+test: $(BIN)
+	$(PYTHON) -I tests/check_matches.py ./$(BIN)
 
 clean:
-	rm $(BINFILE)
+	rm -f $(BIN) $(BIN)-asan

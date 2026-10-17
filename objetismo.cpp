@@ -1,311 +1,361 @@
-#include <math.h>
+// objetismo: rebuilds an image as a mosaic of Argentum Online item sprites.
+//
+// Each input pixel (or each block of pixels, with --width) becomes the 32x32
+// tile whose color, as it looks on the black background, is closest in CIELAB.
+// The tile set (tiles.png + tiles.tsv) is built by tools/build_tiles.py.
+
+#include <png.h>
+
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
-#include <ctime>
-#include <assert.h>
+#include <vector>
 
-#include "png.h"
+namespace {
 
-#define CIE_8 0.008856 // 216.0/24389.0
+const uint32_t EMPTY = 0xFFFFFFFF;  // cell with a transparent input pixel
 
-using namespace std;
+[[noreturn]] void die(const std::string& msg) {
+    std::cerr << "objetismo: " << msg << std::endl;
+    std::exit(1);
+}
 
-struct RGB {
-    int red;
-    int green;
-    int blue;
-
-    // soy negro.
-    RGB() : red(-1337), green(0), blue(0) {}
-
-    RGB(int r, int g, int b) : red(r), green(g), blue(b) {
-        if (longColor() == 16777215) red = green = blue = 0; 
-    }
-
-    RGB(const RGB& c) : red(c.red), green(c.green), blue(c.blue) {
-        if (longColor() == 16777215) red = green = blue = 0;
-    }
-
-    // soy negro.
-    bool valid() { return red >= 0; }
-
-    int longColor() {
-        return red + green*256 + blue*65536;
-    }
+struct Lab {
+    double L, a, b;
 };
 
-struct XYZ {
-    double x;
-    double y;
-    double z;
-
-    XYZ(double x, double y, double z) : x(x), y(y), z(z) {}
-
+struct Image {
+    int width = 0, height = 0;
+    std::vector<uint8_t> px;  // RGB or RGBA, row-major
 };
 
-struct LAB {
-    double l;
-    double a;
-    double b;
-
-    LAB(double l, double a, double b) : l(l), a(a), b(b) {}
-
+struct Tiles {
+    int size = 0, cols = 0;
+    std::vector<Lab> lab;
+    Image atlas;  // RGB
 };
 
-int cache[256 + 256*256 + 256*65536] = {0};
-RGB objects[2000];
-int files[2000];
+// ---- color ----------------------------------------------------------------
 
-
-double xyzTransformation(double v) {
-    if (v > 0.04045) {
-        v = pow((v + 0.055) / 1.055, 2.4);
-    } else {
-        v = v / 12.92;
-    } 
-    return v;
+double srgb_to_linear(int c) {
+    double v = c / 255.0;
+    return v > 0.04045 ? std::pow((v + 0.055) / 1.055, 2.4) : v / 12.92;
 }
 
-XYZ RGB_to_XYZ(const RGB& c) {
-    XYZ xyz(
-        xyzTransformation(c.red / 255.0),
-        xyzTransformation(c.green / 255.0),
-        xyzTransformation(c.blue / 255.0)
-    );
-
-    return xyz;
+int linear_to_srgb(double l) {
+    l = std::min(1.0, std::max(0.0, l));
+    double v = l > 0.0031308 ? 1.055 * std::pow(l, 1 / 2.4) - 0.055 : 12.92 * l;
+    return (int)std::lround(v * 255);
 }
 
-double labTransformation(double v) {
-    if (v > 0.008856) {
-        // v = pow(v, 1/3.0);
-        v = pow(v, 1/3.0);
-    } else {
-        v = (7.787 * v) + (16.0 / 116.0);
+double lab_f(double t) {
+    return t > 216.0 / 24389.0 ? std::cbrt(t) : (24389.0 / 27.0 * t + 16) / 116;
+}
+
+// sRGB (D65) -> XYZ -> CIELAB.
+Lab rgb_to_lab(int r8, int g8, int b8) {
+    double r = srgb_to_linear(r8), g = srgb_to_linear(g8), b = srgb_to_linear(b8);
+    double x = 0.4124564 * r + 0.3575761 * g + 0.1804375 * b;
+    double y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b;
+    double z = 0.0193339 * r + 0.1191920 * g + 0.9503041 * b;
+    double fx = lab_f(x / 0.95047), fy = lab_f(y), fz = lab_f(z / 1.08883);
+    return {116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)};
+}
+
+double cie76(const Lab& p, const Lab& q) {
+    double dL = p.L - q.L, da = p.a - q.a, db = p.b - q.b;
+    return std::sqrt(dL * dL + da * da + db * db);
+}
+
+double deg(double r) { return r * 180.0 / M_PI; }
+double rad(double d) { return d * M_PI / 180.0; }
+
+// CIEDE2000, following Sharma, Wu & Dalal (2005).
+double ciede2000(const Lab& p, const Lab& q) {
+    const double pow25_7 = 6103515625.0;  // 25^7
+    double c1 = std::hypot(p.a, p.b), c2 = std::hypot(q.a, q.b);
+    double cbar7 = std::pow((c1 + c2) / 2, 7);
+    double g = 0.5 * (1 - std::sqrt(cbar7 / (cbar7 + pow25_7)));
+    double a1 = (1 + g) * p.a, a2 = (1 + g) * q.a;
+    double c1p = std::hypot(a1, p.b), c2p = std::hypot(a2, q.b);
+    double h1p = (a1 == 0 && p.b == 0) ? 0 : deg(std::atan2(p.b, a1));
+    double h2p = (a2 == 0 && q.b == 0) ? 0 : deg(std::atan2(q.b, a2));
+    if (h1p < 0) h1p += 360;
+    if (h2p < 0) h2p += 360;
+
+    double dLp = q.L - p.L, dCp = c2p - c1p, dhp = 0;
+    if (c1p * c2p != 0) {
+        dhp = h2p - h1p;
+        if (dhp > 180) dhp -= 360;
+        else if (dhp < -180) dhp += 360;
     }
-    return v;
-}
+    double dHp = 2 * std::sqrt(c1p * c2p) * std::sin(rad(dhp / 2));
 
-LAB XYZ_to_Lab(const XYZ& c) {
-    double x = c.x / 0.95047;
-    double y = c.y / 1.0;
-    double z = c.z / 1.08883;
-
-    x = labTransformation(x);
-    y = labTransformation(y);
-    z = labTransformation(z);
-
-    LAB lab((116.0 * y) - 16, 500.0 * (x - y), 200.0 * (y - z));
-
-    return lab;
-}
-
-int cie1976(const RGB& color1, const RGB& color2) {
-    LAB lab1 = XYZ_to_Lab(RGB_to_XYZ(color1));
-    LAB lab2 = XYZ_to_Lab(RGB_to_XYZ(color2));
-
-    double d = sqrt( pow(lab1.l - lab2.l, 2) + pow(lab1.a - lab2.a, 2) + pow(lab1.b - lab2.b, 2) );
-
-    return (int) d;
-}
-
-int cie1994(const RGB& color1, const RGB& color2) {
-
-    LAB lab1 = XYZ_to_Lab(RGB_to_XYZ(color1));
-    LAB lab2 = XYZ_to_Lab(RGB_to_XYZ(color2));
-
-    double dL = lab1.l - lab2.l;
-    double dA = lab1.a - lab2.a;
-    double dB = lab1.b - lab2.b;
-    double c1 = sqrt(pow(lab1.a, 2) + pow(lab1.b, 2));
-    double c2 = sqrt(pow(lab2.a, 2) + pow(lab2.b, 2));
-    double dC = c1 - c2;
-    double dH2 = pow(dA, 2) + pow(dB, 2) - pow(dC, 2);
-    double dH = 0;
-    if (dH2 > 0.0) {
-        // dH = math.sqrt(dA**2 + dB**2 - dC**2)
-        dH = sqrt(dH2);
+    double lbar = (p.L + q.L) / 2, cbarp = (c1p + c2p) / 2, hbarp = h1p + h2p;
+    if (c1p * c2p != 0) {
+        if (std::fabs(h1p - h2p) <= 180) hbarp /= 2;
+        else hbarp = hbarp < 360 ? (hbarp + 360) / 2 : (hbarp - 360) / 2;
     }
-    double sL = 1.0;
-    double k1 = 0.045; //0.048
-    double k2 = 0.015; // #0.014
-    double sC = 1.0 + k1 * c1;
-    double sH = 1.0 + k2 * c1;
-    
-    double kL = 1.0;
-    double kC = 1.0;
-    double kH = 1.0;
-    
-    // e = pow(dL / (kL * sL), 2) + pow(dC / (kC * sC), 2) + pow(dH / (kH * sH), 2)
-    return (int) sqrt(pow(dL / (kL * sL), 2) + pow(dC / (kC * sC), 2) + pow(dH / (kH * sH), 2));
+    double t = 1 - 0.17 * std::cos(rad(hbarp - 30)) + 0.24 * std::cos(rad(2 * hbarp)) +
+               0.32 * std::cos(rad(3 * hbarp + 6)) - 0.20 * std::cos(rad(4 * hbarp - 63));
+    double dtheta = 30 * std::exp(-std::pow((hbarp - 275) / 25, 2));
+    double cbarp7 = std::pow(cbarp, 7);
+    double rc = 2 * std::sqrt(cbarp7 / (cbarp7 + pow25_7));
+    double l50 = (lbar - 50) * (lbar - 50);
+    double sl = 1 + 0.015 * l50 / std::sqrt(20 + l50);
+    double sc = 1 + 0.045 * cbarp, sh = 1 + 0.015 * cbarp * t;
+    double rt = -std::sin(rad(2 * dtheta)) * rc;
+    double vl = dLp / sl, vc = dCp / sc, vh = dHp / sh;
+    return std::sqrt(vl * vl + vc * vc + vh * vh + rt * vc * vh);
 }
 
-int colorDistance(const RGB& c1, const RGB& c2) {
-    // return cie1994(c1, c2);
-    return cie1976(c1, c2);
+// ---- files ----------------------------------------------------------------
+
+Image read_png(const std::string& path, png_uint_32 format) {
+    png_image im;
+    std::memset(&im, 0, sizeof im);
+    im.version = PNG_IMAGE_VERSION;
+    if (!png_image_begin_read_from_file(&im, path.c_str()))
+        die(path + ": " + im.message);
+    im.format = format;
+    Image out;
+    out.width = (int)im.width;
+    out.height = (int)im.height;
+    out.px.resize(PNG_IMAGE_SIZE(im));
+    if (!png_image_finish_read(&im, nullptr, out.px.data(), 0, nullptr))
+        die(path + ": " + im.message);
+    return out;
 }
 
-int getObjectForColor(RGB c) {
-    int colorValue = c.longColor();
-    int r = cache[colorValue];
-    
-    if (r != 0) {
-        return r;
-    }
+Tiles load_tiles(const std::string& dir) {
+    std::string tsv = dir + "/tiles.tsv";
+    std::ifstream in(tsv);
+    if (!in) die("cannot open " + tsv + " (run tools/build_tiles.py, or use --tiles DIR)");
 
-    int i, cD;
-    int d = 16777215;
-    int best = -1;
-
-    for (i = 0; i < 2000; i++) {
-        if (!objects[i].valid()) continue;
-        cD = colorDistance(c, objects[i]);
-        // Same color!
-        if (cD == 0) {
-            best = i;
-            break;
+    Tiles tiles;
+    int count = -1;
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.empty()) continue;
+        if (line[0] == '#') {
+            std::sscanf(line.c_str(), "# objetismo tiles: tile_size=%d cols=%d count=%d",
+                        &tiles.size, &tiles.cols, &count);
+            continue;
         }
-        if (cD < d) {
-            d = cD;
-            best = i;
-        }
+        std::istringstream row(line);
+        int index;
+        Lab lab;
+        if (!(row >> index >> lab.L >> lab.a >> lab.b) || index != (int)tiles.lab.size())
+            die(tsv + ": bad row: " + line);
+        tiles.lab.push_back(lab);
     }
-    if (best > 2000) {  
-        std::cout << "assert! " << best << " for " << colorValue << std::endl;
-        assert(false);
-    }
-    cache[colorValue] = best;
-    return cache[colorValue];
+    if (tiles.size <= 0 || tiles.cols <= 0 || count != (int)tiles.lab.size() || count == 0)
+        die(tsv + ": missing or inconsistent header");
+
+    tiles.atlas = read_png(dir + "/tiles.png", PNG_FORMAT_RGB);
+    int rows = (count + tiles.cols - 1) / tiles.cols;
+    if (tiles.atlas.width != tiles.cols * tiles.size || tiles.atlas.height < rows * tiles.size)
+        die(dir + "/tiles.png: size does not match tiles.tsv");
+    return tiles;
 }
 
+// ---- mosaic ---------------------------------------------------------------
 
-// Get current date/time, format is YYYY-MM-DD.HH:mm:ss
-const std::string currentDateTime() {
-    time_t     now = time(0);
-    struct tm  tstruct;
-    char       buf[80];
-    tstruct = *localtime(&now);
-    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-    // for more information about date/time format
-    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
-    return buf;
-}
+// Averages the RGBA input into cols x rows cells, in linear light, composited
+// on black. Returns one packed 0xRRGGBB per cell, or EMPTY if mostly transparent.
+std::vector<uint32_t> cell_colors(const Image& in, int cols, int rows) {
+    double lin[256];
+    for (int i = 0; i < 256; i++) lin[i] = srgb_to_linear(i);
 
-int main(int argc, const char *argv[]) {
-    if (argc < 2) {
-        std::cout << "Usage ./objetismo image.png" << std::endl;
-        return 1;
-    }
-
-
-    ::std::ifstream in("resources/colors", ::std::ios::binary);
-
-    while (!in.eof()) {
-        int id1 = in.get();
-        if (id1 == -1) break;
-        int id2 = in.get();
-        int id = id1 + (id2 * 256);
-        int fi1 = in.get();
-        int fi2 = in.get();
-        int fi = fi1 + (fi2 * 256);
-
-        int r = in.get();
-        int g = in.get();
-        int b = in.get();
-        objects[id] = RGB(r, g, b);
-        files[id] = fi;
-    }
-
-    PNG img;
-    img.read(argv[1]);
-
-    short w = img.width();
-    short h = img.height();
-    int x,y,counter = 0;
-    short dst_matrix [w][h];
-    int i = 0;
-    int max = w*h;
-
-    PNG* surfaces[2000];
-    for (i = 0; i < 2000; i++) {
-        surfaces[i] = NULL;
-    }
-
-    for (x = 0; x < w; x++) {
-        for (y = 0; y < h; y++) {
-            dst_matrix[x][y] = -1;
+    std::vector<uint32_t> cells((size_t)cols * rows);
+    for (int cy = 0; cy < rows; cy++) {
+        int y0 = (int)((int64_t)cy * in.height / rows);
+        int y1 = std::max(y0 + 1, (int)((int64_t)(cy + 1) * in.height / rows));
+        for (int cx = 0; cx < cols; cx++) {
+            int x0 = (int)((int64_t)cx * in.width / cols);
+            int x1 = std::max(x0 + 1, (int)((int64_t)(cx + 1) * in.width / cols));
+            double r = 0, g = 0, b = 0, a = 0;
+            for (int y = y0; y < y1; y++) {
+                const uint8_t* p = &in.px[((size_t)y * in.width + x0) * 4];
+                for (int x = x0; x < x1; x++, p += 4) {
+                    double alpha = p[3] / 255.0;
+                    r += lin[p[0]] * alpha;
+                    g += lin[p[1]] * alpha;
+                    b += lin[p[2]] * alpha;
+                    a += alpha;
+                }
+            }
+            double n = (double)(y1 - y0) * (x1 - x0);
+            cells[(size_t)cy * cols + cx] =
+                a / n < 0.5 ? EMPTY
+                            : (uint32_t)linear_to_srgb(r / n) << 16 |
+                                  (uint32_t)linear_to_srgb(g / n) << 8 |
+                                  (uint32_t)linear_to_srgb(b / n);
         }
     }
+    return cells;
+}
 
-#pragma omp parallel for
-    for (x = 0; x < w; x++) {
-        std::cout << "d: " << counter << endl;
-        for (y = 0; y < h; y++) {
-            png_bytep p = img.getPixel(x, y);
-            RGB c(p[0],p[1],p[2]);
-            dst_matrix[x][y] = getObjectForColor(c);
-            if (dst_matrix[x][y] > 2000) {
-                std::cout << "assert! " << x << "," << y << std::endl;
-                assert(false);
+// Maps each distinct cell color to its closest tile, then each cell to a tile
+// index (-1 for empty cells).
+std::vector<int> match(const std::vector<uint32_t>& cells, const Tiles& tiles, bool use_de2000,
+                       size_t* distinct) {
+    std::vector<uint32_t> colors(cells);
+    std::sort(colors.begin(), colors.end());
+    colors.erase(std::unique(colors.begin(), colors.end()), colors.end());
+    if (!colors.empty() && colors.back() == EMPTY) colors.pop_back();
+    *distinct = colors.size();
+
+    std::vector<int> best(colors.size());
+#pragma omp parallel for schedule(dynamic, 64)
+    for (long i = 0; i < (long)colors.size(); i++) {
+        uint32_t c = colors[i];
+        Lab lab = rgb_to_lab(c >> 16, (c >> 8) & 0xFF, c & 0xFF);
+        double best_d = INFINITY;
+        int best_k = 0;
+        for (size_t k = 0; k < tiles.lab.size(); k++) {
+            double d = use_de2000 ? ciede2000(lab, tiles.lab[k]) : cie76(lab, tiles.lab[k]);
+            if (d < best_d) {
+                best_d = d;
+                best_k = (int)k;
             }
         }
-        counter++;
+        best[i] = best_k;
     }
-    std::cout << "checking" << std::endl;
 
-    for (x = 0; x < w; x++) {
-        for (y = 0; y < h; y++) {
-            if (dst_matrix[x][y] > 2000) {
-                std::cout << x << "," << y << std::endl;
-            }
+    std::vector<int> out(cells.size());
+    for (size_t i = 0; i < cells.size(); i++) {
+        if (cells[i] == EMPTY) {
+            out[i] = -1;
+            continue;
         }
+        auto it = std::lower_bound(colors.begin(), colors.end(), cells[i]);
+        out[i] = best[it - colors.begin()];
     }
+    return out;
+}
 
-    std::string res = "resources/graficos/";
-    std::string output = "output/";
-    std::string ext = ".png";
-    PNG* sp;
-    std::cout << "sprites" << std::endl;
-    counter = 0;
-    for (x = 0; x < w; x++) {
-        // std::cout << "s: " << counter << endl;
-        for (y = 0; y < h; y++) {
-            short objId = dst_matrix[x][y];
-            if (objId > 0 && surfaces[objId] == NULL) {
-                sp = new PNG();
-                std::string str = res + std::to_string(files[objId]) + ext;
-                const char* filename = str.c_str();
-                std::cout << "sprite " << objId << "..." << "\r";
-                sp->read(filename);
-                surfaces[objId] = sp;
-                std::cout << "sprite " << objId << "... " << "Done!" << endl;                
-            }
+// Writes the mosaic one row of tiles at a time, so the full output image is
+// never held in memory.
+void write_mosaic(const std::string& path, const std::vector<int>& map, int cols, int rows,
+                  const Tiles& tiles) {
+    const int t = tiles.size;
+    const size_t width = (size_t)cols * t, height = (size_t)rows * t;
+    if (width > PNG_UINT_31_MAX || height > PNG_UINT_31_MAX)
+        die("output too large, use --width to reduce it");
+    std::vector<uint8_t> band(width * 3 * t);
+
+    FILE* fp = std::fopen(path.c_str(), "wb");
+    if (!fp) die("cannot write " + path + ": " + std::strerror(errno));
+    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+    png_infop info = png ? png_create_info_struct(png) : nullptr;
+    if (!info) die("out of memory");
+    if (setjmp(png_jmpbuf(png))) {
+        std::fclose(fp);
+        die("failed to write " + path);
+    }
+    png_init_io(png, fp);
+    png_set_IHDR(png, info, (png_uint_32)width, (png_uint_32)height, 8, PNG_COLOR_TYPE_RGB,
+                 PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    png_write_info(png, info);
+
+    const size_t tile_row = (size_t)t * 3;
+    for (int cy = 0; cy < rows; cy++) {
+        std::fill(band.begin(), band.end(), 0);
+        for (int cx = 0; cx < cols; cx++) {
+            int k = map[(size_t)cy * cols + cx];
+            if (k < 0) continue;
+            size_t ax = (size_t)(k % tiles.cols) * t, ay = (size_t)(k / tiles.cols) * t;
+            for (int y = 0; y < t; y++)
+                std::memcpy(&band[(size_t)y * width * 3 + cx * tile_row],
+                            &tiles.atlas.px[((ay + y) * tiles.atlas.width + ax) * 3], tile_row);
         }
-        // counter++;
+        for (int y = 0; y < t; y++) png_write_row(png, &band[(size_t)y * width * 3]);
     }
+    png_write_end(png, nullptr);
+    png_destroy_write_struct(&png, &info);
+    if (std::fclose(fp) != 0) die("failed to write " + path);
+}
 
-    PNG image;
-    image.create(w*32, h*32);
-    std::cout << std::endl;
-    for (x = 0; x < w; x++) {
-        for (y = 0; y < h; y++) { 
-           short objId = dst_matrix[x][y];
-            if (objId < 0 || objId > 2000) {
-                std::cout << "assert! " << objId << " en " << x << "," << y << std::endl;
-                assert(false);
-            }
-            image.paste(*surfaces[objId], x*32, y*32);
-        }
-    }
-    // const char* f = currentDateTime().c_str();
-    // std::cout << f << std::endl; 
-    std::cout << std::endl;
-    image.write("bbbbbbbb.png");
-    PNG* ap; 
-    for (i = 0; i < 2000; i++) {
-        if (surfaces[i] != NULL) delete surfaces[i];
-    }
+void write_indices(const std::string& path, const std::vector<int>& map, int cols, int rows) {
+    std::ofstream out(path);
+    if (!out) die("cannot write " + path);
+    for (int y = 0; y < rows; y++)
+        for (int x = 0; x < cols; x++)
+            out << map[(size_t)y * cols + x] << (x + 1 < cols ? '\t' : '\n');
+    if (!out) die("failed to write " + path);
+}
 
+const char* USAGE =
+    "usage: objetismo -i INPUT.png -o OUTPUT.png [options]\n"
+    "\n"
+    "  -i, --input FILE      image to rebuild\n"
+    "  -o, --output FILE     mosaic to write (PNG)\n"
+    "  -w, --width N         mosaic width in tiles; the input is averaged down to\n"
+    "                        N columns first (default: one tile per input pixel)\n"
+    "  -t, --tiles DIR       directory with tiles.png and tiles.tsv (default: resources)\n"
+    "  -m, --metric NAME     color difference: de2000 (default) or cie76\n"
+    "      --dump-indices F  also write the chosen tile index of each cell as TSV\n"
+    "  -h, --help            show this help\n";
+
+}  // namespace
+
+int main(int argc, char** argv) {
+    std::string input, output, tiles_dir = "resources", metric = "de2000", dump;
+    int width = 0;
+
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        auto value = [&]() -> std::string {
+            if (i + 1 >= argc) die("missing value for " + arg);
+            return argv[++i];
+        };
+        if (arg == "-h" || arg == "--help") {
+            std::cout << USAGE;
+            return 0;
+        } else if (arg == "-i" || arg == "--input") input = value();
+        else if (arg == "-o" || arg == "--output") output = value();
+        else if (arg == "-t" || arg == "--tiles") tiles_dir = value();
+        else if (arg == "-m" || arg == "--metric") metric = value();
+        else if (arg == "--dump-indices") dump = value();
+        else if (arg == "-w" || arg == "--width") {
+            std::string v = value();
+            char* end;
+            long n = std::strtol(v.c_str(), &end, 10);
+            if (*end || n <= 0 || n > 100000) die("invalid --width: " + v);
+            width = (int)n;
+        } else die("unknown option " + arg + "\n" + USAGE);
+    }
+    if (input.empty() || output.empty()) die(std::string("missing -i or -o\n") + USAGE);
+    if (metric != "de2000" && metric != "cie76") die("unknown metric " + metric);
+
+    Tiles tiles = load_tiles(tiles_dir);
+    Image in = read_png(input, PNG_FORMAT_RGBA);
+
+    int cols = width ? width : in.width;
+    int rows = width ? std::max(1, (int)std::lround((double)in.height * cols / in.width))
+                     : in.height;
+
+    size_t distinct;
+    std::vector<int> map = match(cell_colors(in, cols, rows), tiles, metric == "de2000", &distinct);
+    write_mosaic(output, map, cols, rows, tiles);
+    if (!dump.empty()) write_indices(dump, map, cols, rows);
+
+    std::vector<int> used(map);
+    std::sort(used.begin(), used.end());
+    used.erase(std::unique(used.begin(), used.end()), used.end());
+    if (!used.empty() && used.front() < 0) used.erase(used.begin());
+    std::cout << input << " (" << in.width << "x" << in.height << ") -> " << cols << "x" << rows
+              << " tiles, " << distinct << " distinct colors, " << used.size() << " of "
+              << tiles.lab.size() << " tiles used\n"
+              << "wrote " << output << " (" << cols * tiles.size << "x" << rows * tiles.size
+              << ")\n";
     return 0;
 }
