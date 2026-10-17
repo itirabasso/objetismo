@@ -1,6 +1,8 @@
 // objetismo in the browser: decodes the image, runs the WebAssembly core on a
 // pool of workers and draws the mosaic from tiles.png. Nothing is uploaded.
 
+import { encodePng } from './png.js';
+
 const $ = (id) => document.getElementById(id);
 
 // Safari caps a canvas at 16.7M pixels; the others allow more, but stay safe.
@@ -102,6 +104,7 @@ const state = {
   mosaic: null,  // last result of Pool.run
   tilePx: 32,    // tile size the mosaic is drawn at
   run: 0,        // increments on every change so stale results are dropped
+  exporting: false,
 };
 
 function setStatus(text, isError = false) {
@@ -169,6 +172,44 @@ async function update() {
   }
 }
 
+// The atlas with every tile scaled to t px, cached per size. Each tile is
+// scaled on its own so its neighbors in the atlas do not bleed into it.
+const sheets = new Map();
+function tileSheet(t) {
+  if (!sheets.has(t)) {
+    const { size, cols, names } = state.tiles;
+    const sheet = new OffscreenCanvas(cols * t, Math.ceil(names.length / cols) * t);
+    const ctx = sheet.getContext('2d', { willReadFrequently: true });
+    ctx.imageSmoothingQuality = 'high';
+    for (let k = 0; k < names.length; k++) {
+      const x = k % cols, y = Math.floor(k / cols);
+      ctx.drawImage(state.atlas, x * size, y * size, size, size, x * t, y * t, t, t);
+    }
+    sheets.set(t, sheet);
+  }
+  return sheets.get(t);
+}
+
+// The pixels of every tile at t px, one RGBA Uint32Array per tile, cached per size.
+const tilePixelCache = new Map();
+function tilePixels(t) {
+  if (!tilePixelCache.has(t)) {
+    const sheet = tileSheet(t), cols = state.tiles.cols;
+    const px = new Uint32Array(
+      sheet.getContext('2d').getImageData(0, 0, sheet.width, sheet.height).data.buffer);
+    tilePixelCache.set(t, state.tiles.names.map((_, k) => {
+      const tile = new Uint32Array(t * t);
+      const x0 = (k % cols) * t, y0 = Math.floor(k / cols) * t;
+      for (let y = 0; y < t; y++) {
+        const row = (y0 + y) * sheet.width + x0;
+        tile.set(px.subarray(row, row + t), y * t);
+      }
+      return tile;
+    }));
+  }
+  return tilePixelCache.get(t);
+}
+
 function draw() {
   const { indices, cols, rows, distinct, ms } = state.mosaic;
   const { size, cols: atlasCols } = state.tiles;
@@ -198,11 +239,45 @@ function draw() {
     }
   }
 
-  const note = t < wanted ? ` · drawn at ${t} px per tile to fit the browser's canvas limit` : '';
+  const output = `${cols * wanted} × ${rows * wanted} px`;
+  const note = t < wanted
+    ? ` · previewed at ${t} px per tile, the download is full size` : '';
   setStatus(`${cols} × ${rows} tiles · ${distinct.toLocaleString()} distinct colors · ` +
             `${used.size} of ${state.tiles.names.length} items used · ` +
-            `${canvas.width} × ${canvas.height} px · ${(ms / 1000).toFixed(2)} s${note}`);
+            `${output} · ${(ms / 1000).toFixed(2)} s${note}`);
+  if (!state.exporting) resetDownload();
+}
+
+// ---- PNG export -------------------------------------------------------------
+
+function resetDownload() {
+  const { cols, rows } = state.mosaic, t = +$('tile-px').value;
   $('download').disabled = false;
+  $('download').textContent = `Download PNG (${cols * t} × ${rows * t} px)`;
+}
+
+async function download() {
+  const button = $('download');
+  if (button.disabled) return;
+  const { mosaic, name } = state;
+  const t = +$('tile-px').value;
+  state.exporting = true;
+  button.disabled = true;
+  try {
+    const blob = await encodePng(mosaic, t, tilePixels(t), (f) => {
+      button.textContent = `Saving PNG… ${Math.round(f * 100)}%`;
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${name}-objetismo-${mosaic.cols}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
+  } catch (e) {
+    setStatus(`Could not save the PNG: ${e.message}`, true);
+  } finally {
+    state.exporting = false;
+    resetDownload();
+  }
 }
 
 function showTile(e) {
@@ -358,15 +433,7 @@ function bindControls() {
   $('metric').addEventListener('change', update);
   $('tile-px').addEventListener('change', () => state.mosaic && draw());
 
-  $('download').addEventListener('click', () => {
-    $('mosaic').toBlob((blob) => {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `${state.name}-objetismo-${state.mosaic.cols}.png`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
-    }, 'image/png');
-  });
+  $('download').addEventListener('click', download);
 
   const mosaic = $('mosaic');
   mosaic.addEventListener('mousemove', showTile);

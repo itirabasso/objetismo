@@ -47,8 +47,8 @@ Nothing rebuilds the WebAssembly automatically: run `make wasm` after editing
 `objetismo.h`, or the page (and `make test-wasm`) keep using the old build.
 
 Browsers limit a canvas to about 16.7 million pixels (Safari), so large
-mosaics are drawn with smaller tiles; the page says when it does that. Use the
-CLI for full-size output beyond that.
+mosaics are previewed with smaller tiles. PNG downloads keep the selected tile
+size and are encoded a row of tiles at a time, beyond the canvas limit.
 
 ## Tile set
 
