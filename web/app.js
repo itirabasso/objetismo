@@ -1,6 +1,7 @@
 // objetismo in the browser: decodes the image, runs the WebAssembly core on a
 // pool of workers and draws the mosaic from tiles.png. Nothing is uploaded.
 
+import { Matcher } from './matcher.js';
 import { encodePng } from './png.js';
 
 const $ = (id) => document.getElementById(id);
@@ -12,65 +13,6 @@ const MAX_INPUT_PIXELS = 50_000_000;
 const MAX_COLS = 400;
 const MAX_TILE_ON_SCREEN = 256;  // largest a tile gets when zoomed in, in CSS pixels
 const ZOOM_STEP = 1.5;
-
-// ---- workers ----------------------------------------------------------------
-
-class Pool {
-  constructor(n, tsv) {
-    this.workers = Array.from({ length: n }, () => {
-      const w = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
-      w.pending = new Map();
-      w.onmessage = ({ data: { id, result, error } }) => {
-        const p = w.pending.get(id);
-        w.pending.delete(id);
-        error ? p.reject(new Error(error)) : p.resolve(result);
-      };
-      w.onerror = (e) => {
-        for (const p of w.pending.values()) p.reject(new Error(e.message || 'worker failed'));
-        w.pending.clear();
-      };
-      return w;
-    });
-    this.nextId = 0;
-    this.ready = Promise.all(this.workers.map((w) => this.call(w, 'init', { tsv })));
-  }
-
-  call(worker, type, args, transfer = []) {
-    const id = this.nextId++;
-    return new Promise((resolve, reject) => {
-      worker.pending.set(id, { resolve, reject });
-      worker.postMessage({ id, type, ...args }, transfer);
-    });
-  }
-
-  // Same result as the CLI: cells are averaged on one worker, then every
-  // worker matches an interleaved share of them (interleaved so that a flat
-  // region does not leave one worker with all the distinct colors).
-  async run(image, cols, de2000) {
-    await this.ready;
-    const pixels = image.data.slice().buffer;
-    const { cells, rows } = await this.call(this.workers[0], 'cells',
-      { pixels, width: image.width, height: image.height, cols }, [pixels]);
-
-    const n = this.workers.length;
-    const shares = this.workers.map((_, k) => {
-      const share = new Uint32Array(Math.ceil((cells.length - k) / n));
-      for (let i = k, j = 0; i < cells.length; i += n, j++) share[j] = cells[i];
-      return share;
-    });
-    const results = await Promise.all(this.workers.map((w, k) =>
-      this.call(w, 'match', { cells: shares[k], de2000 }, [shares[k].buffer])));
-
-    const indices = new Int32Array(cells.length);
-    results.forEach(({ indices: part }, k) => {
-      for (let i = k, j = 0; i < cells.length; i += n, j++) indices[i] = part[j];
-    });
-    const distinct = new Set(cells);
-    distinct.delete(0xFFFFFFFF);
-    return { indices, cols, rows, distinct: distinct.size };
-  }
-}
-
 // ---- tiles ------------------------------------------------------------------
 
 function parseTiles(tsv) {
@@ -96,14 +38,14 @@ function loadImage(src) {
 // ---- state ------------------------------------------------------------------
 
 const state = {
-  pool: null,
+  matcher: null,
   tiles: null,
   atlas: null,
-  image: null,   // ImageData of the input
+  image: null,   // ImageData of the input; null while loading
   name: 'mosaic',
-  mosaic: null,  // last result of Pool.run
+  mosaic: null,  // last displayed result, with its run number
   tilePx: 32,    // tile size the mosaic is drawn at
-  run: 0,        // increments on every change so stale results are dropped
+  run: 0,        // invalidates old image loads and matching results
   exporting: false,
 };
 
@@ -112,65 +54,115 @@ function setStatus(text, isError = false) {
   $('status').classList.toggle('error', isError);
 }
 
-async function decode(blob, name) {
-  const bitmap = await createImageBitmap(blob);
-  const { width, height } = bitmap;
-  if (width * height > MAX_INPUT_PIXELS) {
+async function openImage(blob, name = blob?.name) {
+  if (!blob) return;
+  const run = ++state.run;
+  state.image = null;
+  pending.next = null;
+  refreshControls();
+  try {
+    await ready;
+    if (run !== state.run) return;
+    setStatus('Loading image…');
+    const bitmap = await createImageBitmap(blob);
+    if (run !== state.run) {
+      bitmap.close();
+      return;
+    }
+    const { width, height } = bitmap;
+    if (width * height > MAX_INPUT_PIXELS) {
+      bitmap.close();
+      throw new Error(`image too large (${width} × ${height})`);
+    }
+    const canvas = new OffscreenCanvas(width, height);
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(bitmap, 0, 0);
     bitmap.close();
-    throw new Error(`image too large (${width} × ${height})`);
+    const image = ctx.getImageData(0, 0, width, height);
+    await state.matcher.setImage(image);
+    if (run !== state.run) return;
+    state.image = image;
+    state.name = name.replace(/\.[^.]*$/, '') || 'mosaic';
+
+    const preview = $('original');
+    preview.width = width;
+    preview.height = height;
+    preview.getContext('2d').putImageData(state.image, 0, 0);
+    $('source-size').textContent = `${width} × ${height} px`;
+
+    // More tiles than pixels would only repeat cells.
+    const max = Math.min(MAX_COLS, width);
+    $('width').min = $('width-value').min = Math.min(4, max);
+    $('width').max = $('width-value').max = max;
+    setWidth(+$('width-value').value);
+    document.body.classList.add('has-image');
+    schedule('exact');
+  } catch (e) {
+    if (run === state.run) setStatus(`Could not read ${name}: ${e.message}`, true);
   }
-  const canvas = new OffscreenCanvas(width, height);
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(bitmap, 0, 0);
-  bitmap.close();
-  state.image = ctx.getImageData(0, 0, width, height);
-  state.name = name.replace(/\.[^.]*$/, '') || 'mosaic';
-
-  const preview = $('original');
-  preview.width = width;
-  preview.height = height;
-  preview.getContext('2d').putImageData(state.image, 0, 0);
-  $('source-size').textContent = `${width} × ${height} px`;
-
-  // More tiles than pixels would only repeat cells.
-  const max = Math.min(MAX_COLS, width);
-  $('width').max = $('width-value').max = max;
-  setWidth(Math.min(+$('width-value').value, max));
-  document.body.classList.add('has-image');
-  update();
 }
 
-async function openFile(file) {
-  if (!file) return;
+// ---- matching and scheduling ------------------------------------------------
+
+// Builds and draws the mosaic for the current settings. A preview matches
+// rounded colors, for live feedback while the slider moves.
+async function update(preview) {
+  if (!state.image) return;
+  const run = ++state.run;
+  const isCurrent = () => run === state.run;
+  const cols = +$('width').value;
+  const de2000 = $('metric').value === 'de2000';
+  if (!preview) setStatus('Matching…');
+  const t0 = performance.now();
   try {
-    await decode(file, file.name);
+    const mosaic = await state.matcher.match(cols, de2000, preview, isCurrent);
+    if (!mosaic) return;
+    state.mosaic = { ...mosaic, preview, run, ms: performance.now() - t0 };
+    draw();
   } catch (e) {
-    setStatus(`Could not read ${file.name}: ${e.message}`, true);
+    if (isCurrent()) setStatus(e.message, true);
   }
+}
+
+// Runs update() for the latest request, one run at a time: a preview that is
+// under way finishes (so dragging always shows progress), while an exact run,
+// which can take seconds, is dropped as soon as anything changes.
+const pending = { running: null, next: null };  // 'preview' or 'exact'
+
+function schedule(kind) {
+  if (!state.image) return;
+  pending.next = kind;
+  if (pending.running === 'exact') state.run++;
+  refreshControls();
+  if (!pending.running) drain();
+}
+
+async function drain() {
+  while (pending.next) {
+    pending.running = pending.next;
+    pending.next = null;
+    refreshControls();
+    await update(pending.running === 'preview');
+  }
+  pending.running = null;
+  refreshControls();
+}
+
+// Download requires a current exact result and no pending work or export.
+function refreshControls() {
+  const { mosaic, exporting } = state;
+  const button = $('download');
+  button.disabled = exporting || !state.image || !!pending.running || !!pending.next ||
+    !mosaic || mosaic.preview || mosaic.run !== state.run;
+  if (!exporting) {
+    const t = +$('tile-px').value;
+    button.textContent = mosaic
+      ? `Download PNG (${mosaic.cols * t} × ${mosaic.rows * t} px)` : 'Download PNG';
+  }
+  document.body.classList.toggle('busy', pending.running === 'exact');
 }
 
 // ---- rendering --------------------------------------------------------------
-
-async function update() {
-  if (!state.image) return;
-  const run = ++state.run;
-  const cols = +$('width').value;
-  const de2000 = $('metric').value === 'de2000';
-  setStatus('Matching…');
-  document.body.classList.add('busy');
-  const t0 = performance.now();
-  try {
-    const mosaic = await state.pool.run(state.image, cols, de2000);
-    if (run !== state.run) return;
-    mosaic.ms = performance.now() - t0;
-    state.mosaic = mosaic;
-    draw();
-  } catch (e) {
-    if (run === state.run) setStatus(e.message, true);
-  } finally {
-    if (run === state.run) document.body.classList.remove('busy');
-  }
-}
 
 // The atlas with every tile scaled to t px, cached per size. Each tile is
 // scaled on its own so its neighbors in the atlas do not bleed into it.
@@ -211,12 +203,20 @@ function tilePixels(t) {
 }
 
 function draw() {
-  const { indices, cols, rows, distinct, ms } = state.mosaic;
-  const { size, cols: atlasCols } = state.tiles;
-  const fit = Math.floor(Math.min(Math.sqrt(MAX_CANVAS_AREA / (cols * rows)),
-                                  MAX_CANVAS_SIDE / cols, MAX_CANVAS_SIDE / rows));
+  const { indices, cols, rows, distinct, ms, preview } = state.mosaic;
+  const fit = Math.min(Math.sqrt(MAX_CANVAS_AREA / (cols * rows)),
+                       MAX_CANVAS_SIDE / cols, MAX_CANVAS_SIDE / rows);
+  // The preview halves the tile size until it fits the canvas limit; halving
+  // keeps the sprites sharp. The download is always at the chosen size.
   const wanted = +$('tile-px').value;
-  const t = state.tilePx = Math.max(1, Math.min(wanted, fit));
+  let t = wanted;
+  while (t > fit && t > 1) t /= 2;
+  // A preview only needs the detail the stage shows when the whole mosaic
+  // fits in it, so it is drawn with the smallest tile that still covers that.
+  const stage = $('stage');
+  const shown = Math.min(stage.clientWidth / cols, stage.clientHeight / rows) * devicePixelRatio;
+  if (preview) while (t / 2 >= shown && t > 1) t /= 2;
+  state.tilePx = t;
 
   const canvas = $('mosaic');
   const resized = canvas.width !== cols * t || canvas.height !== rows * t;
@@ -224,37 +224,36 @@ function draw() {
   canvas.height = rows * t;
   if (resized) view.zoom = null;
   applyZoom();
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingQuality = 'high';
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Copies the tiles' pixels into one image and puts it on the canvas at
+  // once, which is much faster than a drawImage call per cell.
+  const image = new ImageData(canvas.width, canvas.height);
+  const out = new Uint32Array(image.data.buffer);
+  out.fill(0xFF000000);  // opaque black (RGBA bytes, little-endian)
+  const tiles = tilePixels(t), w = canvas.width;
   const used = new Set();
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       const k = indices[y * cols + x];
       if (k < 0) continue;
       used.add(k);
-      ctx.drawImage(state.atlas, (k % atlasCols) * size, Math.floor(k / atlasCols) * size,
-                    size, size, x * t, y * t, t, t);
+      const tile = tiles[k];
+      for (let r = 0, i = 0, o = y * t * w + x * t; r < t; r++, o += w - t)
+        for (let c = 0; c < t; c++) out[o++] = tile[i++];
     }
   }
+  canvas.getContext('2d').putImageData(image, 0, 0);
 
-  const output = `${cols * wanted} × ${rows * wanted} px`;
+  const size = `${cols * wanted} × ${rows * wanted} px`;
   const note = t < wanted
     ? ` · previewed at ${t} px per tile, the download is full size` : '';
   setStatus(`${cols} × ${rows} tiles · ${distinct.toLocaleString()} distinct colors · ` +
             `${used.size} of ${state.tiles.names.length} items used · ` +
-            `${output} · ${(ms / 1000).toFixed(2)} s${note}`);
-  if (!state.exporting) resetDownload();
+            `${size} · ${preview ? 'preview' : (ms / 1000).toFixed(2) + ' s'}${note}`);
+  refreshControls();
 }
 
 // ---- PNG export -------------------------------------------------------------
-
-function resetDownload() {
-  const { cols, rows } = state.mosaic, t = +$('tile-px').value;
-  $('download').disabled = false;
-  $('download').textContent = `Download PNG (${cols * t} × ${rows * t} px)`;
-}
 
 async function download() {
   const button = $('download');
@@ -262,7 +261,7 @@ async function download() {
   const { mosaic, name } = state;
   const t = +$('tile-px').value;
   state.exporting = true;
-  button.disabled = true;
+  refreshControls();
   try {
     const blob = await encodePng(mosaic, t, tilePixels(t), (f) => {
       button.textContent = `Saving PNG… ${Math.round(f * 100)}%`;
@@ -276,7 +275,7 @@ async function download() {
     setStatus(`Could not save the PNG: ${e.message}`, true);
   } finally {
     state.exporting = false;
-    resetDownload();
+    refreshControls();
   }
 }
 
@@ -404,33 +403,33 @@ function bindZoom() {
 // ---- controls ---------------------------------------------------------------
 
 function setWidth(v) {
+  v = Math.max(+$('width').min, Math.min(+$('width').max, Math.round(v || 0)));
   $('width').value = v;
   $('width-value').value = v;
 }
 
-let debounce;
-function updateSoon() {
-  clearTimeout(debounce);
-  debounce = setTimeout(update, 200);
-}
-
 function bindControls() {
-  $('file').addEventListener('change', (e) => openFile(e.target.files[0]));
+  $('file').addEventListener('change', (e) => openImage(e.target.files[0]));
   $('sample').addEventListener('click', async () => {
-    const blob = await (await fetch('sample.png')).blob();
-    decode(blob, 'mona-lisa.png').catch((e) => setStatus(e.message, true));
+    try {
+      const blob = await (await fetch('sample.png')).blob();
+      await openImage(blob, 'mona-lisa.png');
+    } catch (e) {
+      setStatus(e.message, true);
+    }
   });
 
+  // Live preview while the slider moves, exact match once it is released.
   $('width').addEventListener('input', (e) => {
     $('width-value').value = e.target.value;
-    updateSoon();
+    schedule('preview');
   });
+  $('width').addEventListener('change', () => schedule('exact'));
   $('width-value').addEventListener('change', (e) => {
-    const v = Math.max(+$('width').min, Math.min(+$('width').max, Math.round(+e.target.value || 0)));
-    setWidth(v);
-    update();
+    setWidth(+e.target.value);
+    schedule('exact');
   });
-  $('metric').addEventListener('change', update);
+  $('metric').addEventListener('change', () => schedule('exact'));
   $('tile-px').addEventListener('change', () => state.mosaic && draw());
 
   $('download').addEventListener('click', download);
@@ -450,35 +449,32 @@ function bindControls() {
   drop.addEventListener('drop', (e) => {
     e.preventDefault();
     drop.classList.remove('dragging');
-    openFile(e.dataTransfer.files[0]);
+    openImage(e.dataTransfer.files[0]);
   });
   document.addEventListener('paste', (e) => {
     const item = [...e.clipboardData.items].find((i) => i.type.startsWith('image/'));
-    if (item) openFile(item.getAsFile());
+    if (item) openImage(item.getAsFile());
   });
 }
 
 async function main() {
   bindControls();
   bindZoom();
-  try {
-    const [tsv, atlas] = await Promise.all([
-      fetch('tiles.tsv').then((r) => {
-        if (!r.ok) throw new Error('cannot load tiles.tsv');
-        return r.text();
-      }),
-      loadImage('tiles.png'),
-    ]);
-    state.tiles = parseTiles(tsv);
-    state.atlas = atlas;
-    const threads = Math.max(1, Math.min(navigator.hardwareConcurrency || 4, 8));
-    state.pool = new Pool(threads, tsv);
-    await state.pool.ready;
-    document.body.classList.add('ready');
-    setStatus('Pick an image to start.');
-  } catch (e) {
-    setStatus(e.message, true);
-  }
+  const [tsv, atlas] = await Promise.all([
+    fetch('tiles.tsv').then((r) => {
+      if (!r.ok) throw new Error('cannot load tiles.tsv');
+      return r.text();
+    }),
+    loadImage('tiles.png'),
+  ]);
+  state.tiles = parseTiles(tsv);
+  state.atlas = atlas;
+  const threads = Math.max(1, Math.min(navigator.hardwareConcurrency || 4, 8));
+  state.matcher = new Matcher(threads, tsv);
+  await state.matcher.ready;
+  document.body.classList.add('ready');
+  setStatus('Pick an image to start.');
 }
 
-main();
+const ready = main();
+ready.catch((e) => setStatus(e.message, true));

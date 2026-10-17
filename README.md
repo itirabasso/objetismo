@@ -46,6 +46,9 @@ WASM toolchain. `make test-wasm` needs Node.js and checks one small image.
 Nothing rebuilds the WebAssembly automatically: run `make wasm` after editing
 `objetismo.h`, or the page (and `make test-wasm`) keep using the old build.
 
+Dragging the width slider shows approximate previews; releasing it runs the
+exact match. Color matches are cached across updates.
+
 Browsers limit a canvas to about 16.7 million pixels (Safari), so large
 mosaics are previewed with smaller tiles. PNG downloads keep the selected tile
 size and are encoded a row of tiles at a time, beyond the canvas limit.
