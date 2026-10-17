@@ -4,3 +4,7 @@ output/
 __pycache__/
 resources/graficos/*.bmp
 resources/graficos/*.png
+web/tiles.png
+web/tiles.tsv
+web/sample.png
+.vercel
