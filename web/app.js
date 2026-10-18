@@ -59,6 +59,8 @@ async function openImage(blob, name = blob?.name) {
   const run = ++state.run;
   state.image = null;
   pending.next = null;
+  $('image-warning').hidden = true;
+  $('image-warning').textContent = '';
   refreshControls();
   try {
     await ready;
@@ -73,6 +75,10 @@ async function openImage(blob, name = blob?.name) {
     if (width * height > MAX_INPUT_PIXELS) {
       bitmap.close();
       throw new Error(`image too large (${width} × ${height})`);
+    }
+    if (height > MAX_CANVAS_SIDE) {
+      $('image-warning').textContent = 'This image is very tall. Some browsers may not display its preview. Try cropping it or choosing a smaller image.';
+      $('image-warning').hidden = false;
     }
     const canvas = new OffscreenCanvas(width, height);
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -409,6 +415,7 @@ function setWidth(v) {
 }
 
 function bindControls() {
+  $('choose-image').addEventListener('click', () => $('file').click());
   $('file').addEventListener('change', (e) => openImage(e.target.files[0]));
   $('sample').addEventListener('click', async () => {
     try {

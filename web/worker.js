@@ -42,7 +42,10 @@ const handlers = {
   // PREVIEW_WIDTH px wide that previews average instead, which is much faster
   // for large photos.
   image({ pixels, width, height }) {
-    for (const img of new Set([image, small])) if (img) m._free(img.ptr);
+    const previous = new Set([image, small]);
+    // A failed replacement must not leave references to freed buffers.
+    image = small = null;
+    for (const img of previous) if (img) m._free(img.ptr);
     image = { ptr: copyIn(new Uint8Array(pixels)), width, height };
     small = width > PREVIEW_WIDTH ? shrink(image, PREVIEW_WIDTH) : image;
     return {};
