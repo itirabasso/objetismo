@@ -42,18 +42,16 @@ test: $(BIN)
 
 # WebAssembly build for the browser front end in web/. The output is committed
 # so the site deploys as static files; rebuild it after changing objetismo.h.
-wasm: web/objetismo.js
-
-web/objetismo.js: web/objetismo_wasm.cpp $(HDR)
-	$(EMCC) $(EMFLAGS) $< -o $@
+wasm:
+	$(EMCC) $(EMFLAGS) web/objetismo_wasm.cpp -o web/objetismo.js
 
 # Checks that the WebAssembly build picks the same tiles as the native one.
-test-wasm: $(BIN) web/objetismo.js
+test-wasm: $(BIN) web/objetismo.js web/objetismo.wasm
 	$(PYTHON) -I tests/check_wasm.py ./$(BIN) web/objetismo.js
 
 # Copies the tile set and the sample image next to the page (Vercel runs the
 # same copy, see vercel.json).
-web: web/objetismo.js $(WEB_ASSETS)
+web: web/objetismo.js web/objetismo.wasm $(WEB_ASSETS)
 
 web/tiles.%: resources/tiles.%
 	cp $< $@

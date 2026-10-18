@@ -1,13 +1,30 @@
-// Runs the WebAssembly core. app.js starts one worker per core: one of them
-// averages the image into cells, then each matches its share of the cells.
+// Runs the WebAssembly core. app.js starts one worker per core: the first one
+// holds the image and averages it into cells, then all of them match colors.
 import createModule from './objetismo.js';
 
+const PREVIEW_WIDTH = 1024;
+
 let m;
+let image = null;  // { ptr, width, height } of the image in the module's memory
+let small = null;  // the same, averaged down for previews (or the image itself)
 
 function copyIn(bytes) {
   const ptr = m._malloc(bytes.byteLength);
   m.HEAPU8.set(bytes, ptr);
   return ptr;
+}
+
+// Averages an image down to cols px across with the same code as the cells,
+// so in linear light; transparent cells stay transparent.
+function shrink({ ptr, width, height }, cols) {
+  const rows = m._objetismo_rows(width, height, cols);
+  const out = m._objetismo_cells(ptr, width, height, cols, rows);  // may grow (and move) HEAPU8
+  const cells = new Uint32Array(m.HEAPU8.buffer, out, cols * rows);
+  const rgba = new Uint8Array(cols * rows * 4);
+  cells.forEach((c, i) => {
+    if (c !== 0xFFFFFFFF) rgba.set([c >>> 16, (c >>> 8) & 0xFF, c & 0xFF, 0xFF], i * 4);
+  });
+  return { ptr: copyIn(rgba), width: cols, height: rows };
 }
 
 const handlers = {
@@ -20,12 +37,22 @@ const handlers = {
     return {};
   },
 
-  // Averages a width x height RGBA image down to cols cells per row.
-  cells({ pixels, width, height, cols }) {
-    const ptr = copyIn(new Uint8Array(pixels));
+  // Keeps a width x height RGBA image in the module's memory for cells(), so
+  // moving the slider does not copy it again, plus a copy at most
+  // PREVIEW_WIDTH px wide that previews average instead, which is much faster
+  // for large photos.
+  image({ pixels, width, height }) {
+    for (const img of new Set([image, small])) if (img) m._free(img.ptr);
+    image = { ptr: copyIn(new Uint8Array(pixels)), width, height };
+    small = width > PREVIEW_WIDTH ? shrink(image, PREVIEW_WIDTH) : image;
+    return {};
+  },
+
+  // Averages the image (or its small copy, for a preview) to cols cells per row.
+  cells({ cols, preview }) {
+    const { ptr, width, height } = preview ? small : image;
     const rows = m._objetismo_rows(width, height, cols);
     const out = m._objetismo_cells(ptr, width, height, cols, rows);
-    m._free(ptr);
     const cells = new Uint32Array(m.HEAPU8.buffer, out, cols * rows).slice();
     return { cells, rows, transfer: [cells.buffer] };
   },

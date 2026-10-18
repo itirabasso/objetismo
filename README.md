@@ -41,12 +41,17 @@ server and deploys to Vercel as plain files (see `vercel.json`).
     make test-wasm   # checks the WebAssembly build picks the same tiles as ./objetismo
 
 `make wasm` uses `emcc` if it is installed and the `emscripten/emsdk` Docker
-image otherwise. Its output is committed, so deploying needs no toolchain.
-`make test-wasm` needs Node.js.
+image otherwise. Its output is committed, so serving and deploying need no
+WASM toolchain. `make test-wasm` needs Node.js and checks one small image.
+Nothing rebuilds the WebAssembly automatically: run `make wasm` after editing
+`objetismo.h`, or the page (and `make test-wasm`) keep using the old build.
+
+Dragging the width slider shows approximate previews; releasing it runs the
+exact match. Color matches are cached across updates.
 
 Browsers limit a canvas to about 16.7 million pixels (Safari), so large
-mosaics are drawn with smaller tiles; the page says when it does that. Use the
-CLI for full-size output beyond that.
+mosaics are previewed with smaller tiles. PNG downloads keep the selected tile
+size and are encoded a row of tiles at a time, beyond the canvas limit.
 
 ## Tile set
 
