@@ -42,7 +42,7 @@
   label, .label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
   .pick { display: flex; gap: 8px; }
   .pick > * { flex: 1; text-align: center; white-space: nowrap; }
-  button, .button, select, input[type=number] {
+  button, select, input[type=number] {
     font: inherit;
     color: var(--text);
     background: #1f1f23;
@@ -50,13 +50,12 @@
     border-radius: 6px;
     padding: 7px 12px;
   }
-  button, .button { cursor: pointer; }
-  button:hover:not(:disabled), .button:hover { border-color: var(--accent); }
+  button { cursor: pointer; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
   button:disabled { opacity: 0.4; cursor: default; }
   .primary { background: var(--accent); color: #17130a; border-color: var(--accent); font-weight: 600; }
   .primary:hover:not(:disabled) { filter: brightness(1.08); }
   input[type=file] { display: none; }
-  label.button { display: inline-block; margin: 0; font-size: 15px; text-transform: none; letter-spacing: 0; color: #17130a; }
   .row { display: flex; gap: 10px; align-items: center; }
   input[type=range] { flex: 1; accent-color: var(--accent); }
   input[type=number] { width: 72px; padding: 5px 8px; }
@@ -83,6 +82,7 @@
   }
   #status { margin: 0; color: var(--muted); font-size: 13px; min-height: 1.5em; }
   #status.error { color: var(--error); }
+  #image-warning { margin: 0; color: var(--accent); font-size: 13px; }
   body.busy #status::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--accent); animation: pulse 0.8s infinite alternate; }
   @keyframes pulse { from { opacity: 0.2; } to { opacity: 1; } }
   .viewer { position: relative; flex: 1; min-height: 320px; }
@@ -148,7 +148,7 @@
   <div>
     <span class="label">Image</span>
     <div class="pick">
-      <label class="button primary" for="file">Choose image…</label>
+      <button id="choose-image" type="button" class="primary">Choose image…</button>
       <input type="file" id="file" accept="image/*">
       <button id="sample">Try a sample</button>
     </div>
@@ -198,6 +198,7 @@
 
 <main>
   <p id="status">Loading…</p>
+  <p id="image-warning" role="status" hidden></p>
   <div class="viewer">
     <div class="stage" id="stage">
       <div class="empty">Drop, paste or choose an image to start.</div>
