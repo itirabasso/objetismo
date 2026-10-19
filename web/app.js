@@ -66,25 +66,41 @@ async function openImage(blob, name = blob?.name) {
     await ready;
     if (run !== state.run) return;
     setStatus('Loading image…');
-    const bitmap = await createImageBitmap(blob);
-    if (run !== state.run) {
-      bitmap.close();
-      return;
+    const checkSize = (width, height) => {
+      if (width * height > MAX_INPUT_PIXELS)
+        throw new Error(`image too large (${width} × ${height})`);
+      if (height > MAX_CANVAS_SIDE) {
+        $('image-warning').textContent = 'This image is very tall. Some browsers may not display its preview. Try cropping it or choosing a smaller image.';
+        $('image-warning').hidden = false;
+      }
+    };
+    const signature = new Uint8Array(await blob.slice(0, 8).arrayBuffer());
+    const png = signature.length === 8 &&
+      signature.every((b, i) => b === [137, 80, 78, 71, 13, 10, 26, 10][i]);
+    if (run !== state.run) return;
+    let image;
+    if (png) {
+      // Preserve PNG RGBA values exactly; canvas readback can round RGB when
+      // alpha is partial, which can change the closest tile.
+      const { pixels, width, height } = await state.matcher.decodePng(await blob.arrayBuffer());
+      if (run !== state.run) return;
+      checkSize(width, height);
+      image = new ImageData(new Uint8ClampedArray(pixels), width, height);
+    } else {
+      const bitmap = await createImageBitmap(blob);
+      try {
+        if (run !== state.run) return;
+        const { width, height } = bitmap;
+        checkSize(width, height);
+        const canvas = new OffscreenCanvas(width, height);
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(bitmap, 0, 0);
+        image = ctx.getImageData(0, 0, width, height);
+      } finally {
+        bitmap.close();
+      }
     }
-    const { width, height } = bitmap;
-    if (width * height > MAX_INPUT_PIXELS) {
-      bitmap.close();
-      throw new Error(`image too large (${width} × ${height})`);
-    }
-    if (height > MAX_CANVAS_SIDE) {
-      $('image-warning').textContent = 'This image is very tall. Some browsers may not display its preview. Try cropping it or choosing a smaller image.';
-      $('image-warning').hidden = false;
-    }
-    const canvas = new OffscreenCanvas(width, height);
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(bitmap, 0, 0);
-    bitmap.close();
-    const image = ctx.getImageData(0, 0, width, height);
+    const { width, height } = image;
     await state.matcher.setImage(image);
     if (run !== state.run) return;
     state.image = image;

@@ -9,7 +9,7 @@ PYTHON ?= python3
 EMSDK_IMAGE = emscripten/emsdk:4.0.10
 EMCC ?= $(if $(shell command -v emcc),emcc,docker run --rm -u $(shell id -u):$(shell id -g) \
 	-v $(CURDIR):/src -w /src $(EMSDK_IMAGE) emcc)
-EMFLAGS = -std=c++17 -O3 -Wall -Wextra -Wno-unknown-pragmas \
+EMFLAGS = -std=c++17 -O3 -Wall -Wextra -Wno-unknown-pragmas -sUSE_LIBPNG=1 \
 	-sMODULARIZE -sEXPORT_ES6 -sENVIRONMENT=web,worker,node \
 	-sALLOW_MEMORY_GROWTH -sMAXIMUM_MEMORY=4GB -sEXPORTED_FUNCTIONS=_malloc,_free \
 	-sEXPORTED_RUNTIME_METHODS=HEAPU8,HEAP32,UTF8ToString,stringToNewUTF8
@@ -39,6 +39,7 @@ tiles:
 
 test: $(BIN)
 	$(PYTHON) -I tests/check_matches.py ./$(BIN)
+	$(PYTHON) -I tests/check_output.py ./$(BIN)
 
 # WebAssembly build for the browser front end in web/. The output is committed
 # so the site deploys as static files; rebuild it after changing objetismo.h.

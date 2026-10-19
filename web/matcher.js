@@ -33,6 +33,12 @@ export class Matcher {
     });
   }
 
+  // Decode PNGs with the same library as the CLI, preserving partial alpha.
+  async decodePng(bytes) {
+    await this.ready;
+    return this.call(this.workers[0], 'png', { bytes }, [bytes]);
+  }
+
   // The image stays on the first worker, which averages it into cells.
   async setImage(image) {
     await this.ready;

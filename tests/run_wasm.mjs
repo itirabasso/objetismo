@@ -1,12 +1,12 @@
 // Runs the WebAssembly build on raw RGBA pixels and prints the tile indices
 // as TSV, like objetismo --dump-indices. Used by tests/check_wasm.py.
 //
-// Usage: node tests/run_wasm.mjs web/objetismo.js TILES.tsv IMAGE.rgba WIDTH HEIGHT COLS METRIC
+// Usage: node tests/run_wasm.mjs web/objetismo.js TILES.tsv IMAGE WIDTH HEIGHT COLS METRIC [rgba|png]
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const [modulePath, tsvPath, rgbaPath, w, h, c, metric] = process.argv.slice(2);
+const [modulePath, tsvPath, imagePath, w, h, c, metric, format = 'rgba'] = process.argv.slice(2);
 const width = +w, height = +h, cols = +c;
 
 const { default: createModule } = await import(pathToFileURL(resolve(modulePath)));
@@ -17,10 +17,19 @@ const err = m._objetismo_load_tiles(tsv);
 m._free(tsv);
 if (err) throw new Error(m.UTF8ToString(err));
 
-const rgba = readFileSync(rgbaPath);
-if (rgba.length !== width * height * 4) throw new Error('bad RGBA size');
-const ptr = m._malloc(rgba.length);
-m.HEAPU8.set(rgba, ptr);
+const bytes = readFileSync(imagePath);
+let ptr = m._malloc(bytes.length);
+m.HEAPU8.set(bytes, ptr);
+if (format === 'png') {
+  const result = m._malloc(12);
+  const error = m._objetismo_decode_png(ptr, bytes.length, result);
+  m._free(ptr);
+  if (error) throw new Error(m.UTF8ToString(error));
+  ptr = m.HEAP32[result / 4] >>> 0;
+  if (m.HEAP32[result / 4 + 1] !== width || m.HEAP32[result / 4 + 2] !== height)
+    throw new Error('bad decoded PNG size');
+  m._free(result);
+} else if (bytes.length !== width * height * 4) throw new Error('bad RGBA size');
 const rows = m._objetismo_rows(width, height, cols);
 const cells = m._objetismo_cells(ptr, width, height, cols, rows);
 m._free(ptr);

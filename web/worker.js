@@ -10,6 +10,7 @@ let small = null;  // the same, averaged down for previews (or the image itself)
 
 function copyIn(bytes) {
   const ptr = m._malloc(bytes.byteLength);
+  if (!ptr) throw new Error('not enough memory for the image data');
   m.HEAPU8.set(bytes, ptr);
   return ptr;
 }
@@ -35,6 +36,27 @@ const handlers = {
     m._free(str);
     if (err) throw new Error('tiles.tsv: ' + m.UTF8ToString(err));
     return {};
+  },
+
+  // Decode PNGs without a canvas premultiply/unpremultiply round trip.
+  png({ bytes }) {
+    let encoded = 0, result = 0, rgba = 0;
+    try {
+      encoded = copyIn(new Uint8Array(bytes));
+      result = m._malloc(12);
+      if (!result) throw new Error('not enough memory to decode the image');
+      const err = m._objetismo_decode_png(encoded, bytes.byteLength, result);
+      if (err) throw new Error(m.UTF8ToString(err));
+      // Decoding may grow memory, so obtain the views afterwards.
+      rgba = m.HEAP32[result / 4] >>> 0;
+      const width = m.HEAP32[result / 4 + 1], height = m.HEAP32[result / 4 + 2];
+      const pixels = m.HEAPU8.slice(rgba, rgba + width * height * 4).buffer;
+      return { pixels, width, height, transfer: [pixels] };
+    } finally {
+      if (rgba) m._free(rgba);
+      if (result) m._free(result);
+      if (encoded) m._free(encoded);
+    }
   },
 
   // Keeps a width x height RGBA image in the module's memory for cells(), so
