@@ -28,6 +28,12 @@ Needs a C++17 compiler, libpng and pkg-config (OpenMP is used if available).
 The tile set is dark (the brightest tile has a lightness of about 68 out of
 100), so bright images come out dimmer than the original.
 
+The CLI checks output dimensions before decoding the full input or matching.
+PNG output is limited to 1,000,000 pixels per side (31,250 tiles at 32 px),
+or the installed libpng's limit if lower. The PNG is written to a temporary
+file beside the destination and renamed into place only after a successful
+write and close, preserving an existing output if encoding fails.
+
 ## Web version
 
 `web/` is the same tool as a static page: the matching code in `objetismo.h`
@@ -36,15 +42,21 @@ pool of Web Workers (the browser's stand-in for OpenMP), and the mosaic is
 drawn on a canvas from `tiles.png`. Nothing is uploaded, so the site needs no
 server and deploys to Vercel as plain files (see `vercel.json`).
 
+PNG inputs are decoded with libpng in WebAssembly, preserving semi-transparent
+pixel colors for the same exact matching as the CLI. Other image formats use
+the browser's decoder. Live slider previews remain approximate.
+
     make serve       # copies the tile set next to the page, serves http://localhost:8000
-    make wasm        # rebuilds web/objetismo.{js,wasm} after changing objetismo.h
+    make wasm        # rebuilds web/objetismo.{js,wasm} after core or decoder changes
     make test-wasm   # checks the WebAssembly build picks the same tiles as ./objetismo
 
 `make wasm` uses `emcc` if it is installed and the `emscripten/emsdk` Docker
 image otherwise. Its output is committed, so serving and deploying need no
-WASM toolchain. `make test-wasm` needs Node.js and checks one small image.
+WASM toolchain. `make test-wasm` needs Node.js and checks matching plus PNG
+decoding, including RGBA, grayscale-alpha and palette transparency.
 Nothing rebuilds the WebAssembly automatically: run `make wasm` after editing
-`objetismo.h`, or the page (and `make test-wasm`) keep using the old build.
+`objetismo.h` or `web/objetismo_wasm.cpp`, or the page (and `make test-wasm`)
+keep using the old build.
 
 Dragging the width slider shows approximate previews; releasing it runs the
 exact match. Color matches are cached across updates.
@@ -72,5 +84,5 @@ the average, in linear light, of the whole 32x32 cell drawn on black.
 
 ## Tests
 
-    make test   # checks every match against an independent numpy implementation
+    make test   # independent matching checks, output limits and safe replacement
     make asan   # builds objetismo-asan with address and UB sanitizers

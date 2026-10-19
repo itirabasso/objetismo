@@ -11,7 +11,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <iostream>
+#include <unistd.h>
 
 #include "objetismo.h"
 
@@ -36,12 +38,14 @@ struct Tiles {
 
 // ---- files ----------------------------------------------------------------
 
-Image read_png(const std::string& path, png_uint_32 format) {
+Image read_png(const std::string& path, png_uint_32 format,
+               const std::function<void(int, int)>& check_size = {}) {
     png_image im;
     std::memset(&im, 0, sizeof im);
     im.version = PNG_IMAGE_VERSION;
     if (!png_image_begin_read_from_file(&im, path.c_str()))
         die(path + ": " + im.message);
+    if (check_size) check_size((int)im.width, (int)im.height);
     im.format = format;
     Image out;
     out.width = (int)im.width;
@@ -71,6 +75,55 @@ Tiles load_tiles(const std::string& dir) {
 
 // ---- output ---------------------------------------------------------------
 
+// Validate the grid before decoding pixels, allocating cells, or matching.
+// Keep the aspect-ratio calculation wide until the pixel limits are checked.
+int checked_rows(int width, int height, int cols, int tile_size) {
+    const int64_t rows = std::max<int64_t>(1, ((int64_t)height * cols + width / 2) / width);
+    const int64_t max_width = std::min<int64_t>(1000000, PNG_USER_WIDTH_MAX);
+    const int64_t max_height = std::min<int64_t>(1000000, PNG_USER_HEIGHT_MAX);
+    if (cols > max_width / tile_size || rows > max_height / tile_size)
+        die("output too large (" + std::to_string(cols) + " x " + std::to_string(rows) +
+            " tiles); PNG limit is " + std::to_string(max_width) + " x " +
+            std::to_string(max_height) + " pixels, use --width to reduce it");
+    return (int)rows;
+}
+
+// A sibling temporary file keeps the destination intact until encoding and
+// closing have succeeded. Explicit cleanup is needed because die() exits.
+struct OutputFile {
+    std::string path, temporary;
+    FILE* fp = nullptr;
+
+    explicit OutputFile(const std::string& destination) : path(destination) {
+        std::string pattern = path + ".tmp.XXXXXX";
+        std::vector<char> name(pattern.begin(), pattern.end());
+        name.push_back('\0');
+        int fd = mkstemp(name.data());
+        if (fd < 0) die("cannot write " + path + ": " + std::strerror(errno));
+        temporary = name.data();
+        fp = fdopen(fd, "wb");
+        if (!fp) {
+            const std::string reason = std::strerror(errno);
+            close(fd);
+            fail(reason);
+        }
+    }
+
+    [[noreturn]] void fail(const std::string& reason) {
+        if (fp) std::fclose(fp);
+        std::remove(temporary.c_str());
+        die("cannot write " + path + ": " + reason);
+    }
+
+    void commit() {
+        const int result = std::fclose(fp);
+        fp = nullptr;
+        if (result != 0) fail(std::strerror(errno));
+        if (std::rename(temporary.c_str(), path.c_str()) != 0)
+            fail(std::strerror(errno));
+    }
+};
+
 // Writes the mosaic one row of tiles at a time, so the full output image is
 // never held in memory.
 void write_mosaic(const std::string& path, const std::vector<int>& map, int cols, int rows,
@@ -81,16 +134,18 @@ void write_mosaic(const std::string& path, const std::vector<int>& map, int cols
         die("output too large, use --width to reduce it");
     std::vector<uint8_t> band(width * 3 * t);
 
-    FILE* fp = std::fopen(path.c_str(), "wb");
-    if (!fp) die("cannot write " + path + ": " + std::strerror(errno));
+    OutputFile output(path);
     png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     png_infop info = png ? png_create_info_struct(png) : nullptr;
-    if (!info) die("out of memory");
-    if (setjmp(png_jmpbuf(png))) {
-        std::fclose(fp);
-        die("failed to write " + path);
+    if (!info) {
+        if (png) png_destroy_write_struct(&png, nullptr);
+        output.fail("out of memory");
     }
-    png_init_io(png, fp);
+    if (setjmp(png_jmpbuf(png))) {
+        png_destroy_write_struct(&png, &info);
+        output.fail("PNG encoding failed");
+    }
+    png_init_io(png, output.fp);
     png_set_IHDR(png, info, (png_uint_32)width, (png_uint_32)height, 8, PNG_COLOR_TYPE_RGB,
                  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     png_write_info(png, info);
@@ -110,7 +165,7 @@ void write_mosaic(const std::string& path, const std::vector<int>& map, int cols
     }
     png_write_end(png, nullptr);
     png_destroy_write_struct(&png, &info);
-    if (std::fclose(fp) != 0) die("failed to write " + path);
+    output.commit();
 }
 
 void write_indices(const std::string& path, const std::vector<int>& map, int cols, int rows) {
@@ -166,10 +221,11 @@ int main(int argc, char** argv) {
     if (metric != "de2000" && metric != "cie76") die("unknown metric " + metric);
 
     Tiles tiles = load_tiles(tiles_dir);
-    Image in = read_png(input, PNG_FORMAT_RGBA);
-
-    int cols = width ? width : in.width;
-    int rows = width ? mosaic_rows(in.width, in.height, cols) : in.height;
+    int cols = 0, rows = 0;
+    Image in = read_png(input, PNG_FORMAT_RGBA, [&](int w, int h) {
+        cols = width ? width : w;
+        rows = checked_rows(w, h, cols, tiles.set.size);
+    });
 
     size_t distinct;
     std::vector<int> map = match(cell_colors(in.px.data(), in.width, in.height, cols, rows),
